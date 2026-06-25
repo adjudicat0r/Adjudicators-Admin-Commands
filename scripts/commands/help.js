@@ -141,7 +141,7 @@ function screenCommandList(nav, manager) {
         const ok = canRun(manager, nav.player, c);
         const required = Number.isFinite(c?.minRank) ? c.minRank : 0;
         const icon = ok ? "§2§r" : "§c§r";
-        const name = ok ? `§2:${c.name}§r` : `§7:${c.name}§r`;
+        const name = ok ? `§2:${c.name}§r` : `§c:${c.name}§r`;
         const desc = c?.description ?? "No description.";
         
         form.button(`${icon} ${name}\n§0${desc}§r\n§8minRank: ${required}§r`);

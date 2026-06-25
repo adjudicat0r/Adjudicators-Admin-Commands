@@ -12,6 +12,7 @@ import { handleCloneToolClick } from "./buildingtools/clonetool.js";
 import { handleBuildToolBlock } from "./buildingtools/buildtool.js";
 
 import { setPlayerRank } from "./storage/db.js";
+import { owner } from "./system/config.js";
 
 import { startChatSystem } from "./system/chats.js";
 import { startLoops } from "./system/loops.js";
@@ -24,7 +25,12 @@ startSpawnRateSystem();
 system.runInterval(() => {
   for (const player of world.getAllPlayers()) {
     try {
-      if (player.nameTag === "Kohl37") setPlayerRank(player, 6);
+      if (
+        String(player.nameTag ?? "").toLowerCase() ===
+        String(owner?.nametag ?? "").toLowerCase()
+      ) {
+        setPlayerRank(player, 6);
+      }
     } catch {}
   }
 }, 40); 

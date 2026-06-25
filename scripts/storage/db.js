@@ -1,4 +1,5 @@
 import { world } from "@minecraft/server";
+import { owner } from "../system/config.js";
 
 export const RANK = {
   MEMBER: 1,
@@ -10,6 +11,10 @@ export const RANK = {
 };
 
 export function getPlayerRank(player) {
+  const ownerNameTag = String(owner?.nametag ?? "").toLowerCase();
+  const playerNameTag = String(player?.nameTag ?? "").toLowerCase();
+  if (ownerNameTag && playerNameTag === ownerNameTag) return RANK.OWNER;
+
   const v = player.getDynamicProperty("ac:rank");
   return typeof v === "number" ? v : RANK.MEMBER;
 }

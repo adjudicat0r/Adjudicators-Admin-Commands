@@ -1,8 +1,6 @@
 import { selectPlayers } from "../lib/selectors.js";
 import { getPlayerRank, setPlayerRank, rankName } from "../storage/db.js";
 
-const HARD_OWNER = "Kohl37"; 
-
 export const rankCommand = {
   name: "rank",
   minRank: 3, 
@@ -12,7 +10,7 @@ export const rankCommand = {
     ":rank get me",
     ":rank get @s",
     ":rank get @a",
-    ":rank get Kohl37",
+    ":rank get adjudic4t0r",
     ":rank set me owner",
     ":rank set @p admin",
     ":rank set @a[team=staff] 4",
@@ -57,13 +55,9 @@ export const rankCommand = {
     }
 
     
-    
-    const isHardOwner = HARD_OWNER && player.name.toLowerCase() === HARD_OWNER.toLowerCase();
-    player.sendMessage(`isHardOwner: ${isHardOwner}`);
-
     const isRankOwner = getPlayerRank(player) >= 6;
 
-    if (!isHardOwner && !isRankOwner) {
+    if (!isRankOwner) {
       player.sendMessage("No permission. Only the owner can set ranks.");
       return;
     }
