@@ -22,12 +22,16 @@ export const selectorsCommand = {
       "prop:<key>=<value> - players with a property value",
       "entity:<type[,type...]> - matching entities across loaded dimensions",
       "entity:all - every loaded entity across overworld, nether, and end",
+      "entity:others - every loaded entity except you",
+      "entity:random or entity:random:N - random loaded entity selection",
       "Selectors can be combined with commas, and prefixed with ! for exclusion.",
       "Examples:",
       ":tp me 100 64 100",
       ":rank get rank:mod",
       ":whois near:20:tag:staff",
       ":kill entity:all",
+      ":kill entity:others",
+      ":kill entity:random",
     ];
 
     for (const line of lines) {

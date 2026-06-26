@@ -82,6 +82,43 @@ function selectPlayersSingle(executor, selectorText, allPlayers) {
     const dims = ["overworld", "nether", "the_end"];
     const out = [];
 
+    if (rawTypes.toLowerCase().startsWith("random")) {
+      const allEntities = [];
+      for (const d of dims) {
+        const dim = world.getDimension(d);
+        for (const e of dim.getEntities()) {
+          allEntities.push(e);
+        }
+      }
+
+      let n = 1;
+      const randomSuffix = rawTypes.slice("random".length).trim();
+      if (randomSuffix.startsWith(":")) {
+        const parsed = Number(randomSuffix.slice(1).trim());
+        if (Number.isFinite(parsed) && parsed > 0) n = Math.floor(parsed);
+      }
+
+      if (allEntities.length === 0) return [];
+      n = Math.max(1, Math.min(n, allEntities.length));
+
+      const pool = allEntities.slice();
+      for (let i = pool.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [pool[i], pool[j]] = [pool[j], pool[i]];
+      }
+      return pool.slice(0, n);
+    }
+
+    if (rawTypes.toLowerCase() === "others") {
+      for (const d of dims) {
+        const dim = world.getDimension(d);
+        for (const e of dim.getEntities()) {
+          if (e !== executor) out.push(e);
+        }
+      }
+      return out;
+    }
+
     if (rawTypes.toLowerCase() === "all") {
       for (const d of dims) {
         const dim = world.getDimension(d);
