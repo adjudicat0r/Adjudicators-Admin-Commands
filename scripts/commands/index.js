@@ -66,6 +66,8 @@ import { whoisCommand } from "./whois.js";
 import { scriptCommand } from "./script.js";
 import { spawnrateCommand } from "./spawnrate.js";
 import { pathCommand } from "./path.js";
+import { timeCommand } from "./time.js";
+import { weatherCommand } from "./weather.js";
 export const manager = new CommandManager({ prefix: ":" });
 
 manager.register(smiteCommand);
@@ -144,6 +146,8 @@ manager.register(whoisCommand);
 manager.register(scriptCommand);
 manager.register(spawnrateCommand);
 manager.register(pathCommand);
+manager.register(timeCommand);
+manager.register(weatherCommand);
 
 export function handleCommandMessage(player, msg) {
   manager.runFromChat(player, msg);

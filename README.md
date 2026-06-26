@@ -142,6 +142,8 @@ You can also use the `:selectors` command in game to see this reference.
 
 - `:smite` - Strikes selected players with lightning.
 - `:kill` - Kills selected players.
+- `:time` - Sets the world time to `day`, `night`, `sunrise`, or `sunset`.
+- `:weather` - Sets the world weather to `clear`, `rain`, or `thunder`/`thunderstorm`.
 - `:bomb` - Creates a destructive blast at selected targets.
 - `:boom` - Creates a non-griefing explosion.
 - `:explode` - Creates an explosion with optional damage and fire behavior.
