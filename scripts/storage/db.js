@@ -408,3 +408,28 @@ export function clearMotd() {
   world.setDynamicProperty("ac:motd", undefined);
   return true;
 }
+
+export function getQuotes() {
+  const list = readWorldJson("ac:quotes", []);
+  return Array.isArray(list) ? list.slice() : [];
+}
+
+export function addQuote(text) {
+  const value = String(text ?? "").trim();
+  if (!value) return false;
+
+  const list = getQuotes();
+  list.push(value);
+  writeWorldJson("ac:quotes", list);
+  return true;
+}
+
+export function removeQuote(index1Based) {
+  const list = getQuotes();
+  const index = Math.floor(Number(index1Based)) - 1;
+  if (!Number.isFinite(index) || index < 0 || index >= list.length) return false;
+
+  list.splice(index, 1);
+  writeWorldJson("ac:quotes", list);
+  return true;
+}

@@ -90,6 +90,10 @@ You can also use the `:selectors` command in game to see this reference.
 ### Core Admin
 
 - `:help` - Opens the command browser or shows details for one command.
+- `:dice` - Rolls dice in chat using notation like `:dice 2d20`.
+- `:coinflip` - Flips a coin and announces heads or tails in chat.
+- `:8ball` - Answers a question with a Magic 8-Ball response.
+- `:quote` - Shows a random configured quote or manages the quote list.
 - `:log` - Shows recent admin command history.
 - `:rank` - Gets or sets player ranks.
 - `:permission` - Views or changes per-command rank overrides.
