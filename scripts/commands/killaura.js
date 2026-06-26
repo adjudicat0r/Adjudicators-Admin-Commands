@@ -4,7 +4,7 @@ function parseRange(value, fallback = 3) {
   if (value == null) return fallback;
   const n = Number(value);
   if (!Number.isFinite(n)) return fallback;
-  return Math.max(1, Math.min(32, Math.floor(n)));
+  return Math.max(1, Math.min(100, Math.floor(n)));
 }
 
 function setAuraState(player, enabled, range) {

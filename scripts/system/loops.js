@@ -359,7 +359,7 @@ function handleCrystalAura(p) {
   if (range <= 0) return;
 
   const lastTick = crystalAuraCooldown.get(p.id) ?? -999999;
-  if (auraTick - lastTick < 9) return;
+  if (auraTick - lastTick < 2) return;
   crystalAuraCooldown.set(p.id, auraTick);
 
   let targets = [];
