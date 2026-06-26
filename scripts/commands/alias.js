@@ -1,4 +1,4 @@
-export { makeNameCommand } from "./name.js";
+import { makeNameCommand } from "./name.js";
 
 export const unnameCommand = makeNameCommand({
   name: "unname",
