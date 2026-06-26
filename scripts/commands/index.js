@@ -19,6 +19,7 @@ import { xrayCommand } from "./xray.js";
 import { healCommand } from "./heal.js";
 import { trailCommand, untrailCommand } from "./trail.js";
 import { blindCommand, unblindCommand } from "./blind.js";
+import { tripCommand, untripCommand } from "./trip.js";
 import { godCommand, ungodCommand } from "./god.js";
 import { lockCommand, unlockCommand } from "./lock.js";
 import { topCommand } from "./top.js";
@@ -67,6 +68,7 @@ import { whoisCommand } from "./whois.js";
 import { scriptCommand } from "./script.js";
 import { spawnrateCommand } from "./spawnrate.js";
 import { pathCommand } from "./path.js";
+import { backroomsCommand } from "./backrooms.js";
 import { jailCommand } from "./jail.js";
 import { cmdqueueCommand } from "./cmdqueue.js";
 import { macroCommand } from "./macro.js";
@@ -99,6 +101,8 @@ manager.register(trailCommand);
 manager.register(untrailCommand);
 manager.register(blindCommand);
 manager.register(unblindCommand);
+manager.register(tripCommand);
+manager.register(untripCommand);
 manager.register(godCommand);
 manager.register(ungodCommand);
 manager.register(lockCommand);
@@ -153,6 +157,7 @@ manager.register(whoisCommand);
 manager.register(scriptCommand);
 manager.register(spawnrateCommand);
 manager.register(pathCommand);
+manager.register(backroomsCommand);
 manager.register(jailCommand);
 manager.register(cmdqueueCommand);
 manager.register(macroCommand);
@@ -164,3 +169,4 @@ manager.register(weatherCommand);
 export function handleCommandMessage(player, msg) {
   manager.runFromChat(player, msg);
 }
+
