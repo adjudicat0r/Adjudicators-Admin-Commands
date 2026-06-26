@@ -136,17 +136,7 @@ function tickJails() {
   for (const session of activeJails.values()) {
     if (now >= session.expiresAt) {
       stopJail(session, { notify: true });
-      continue;
     }
-
-    const player = getPlayerById(session.playerId);
-    if (!player) continue;
-
-    try {
-      player.teleport(session.center, {
-        dimension: getDimensionById(session.dimensionId),
-      });
-    } catch {}
   }
 }
 
