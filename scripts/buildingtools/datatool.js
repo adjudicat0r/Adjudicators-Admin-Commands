@@ -1,7 +1,40 @@
 
-
-
 import { ModalFormData, ActionFormData } from "@minecraft/server-ui";
+import { getPetOwnerTag, markEntityAsPet, unmarkEntityAsPet } from "../system/pet.js";
+import { openInventoryEditor } from "../commands/invsee.js";
+
+const DATA_TOOL_PAGE_SIZE = 7;
+const EFFECT_OPTIONS = [
+  "absorption",
+  "bad_omen",
+  "blindness",
+  "conduit_power",
+  "darkness",
+  "fatal_poison",
+  "fire_resistance",
+  "haste",
+  "health_boost",
+  "hunger",
+  "instant_damage",
+  "instant_health",
+  "invisibility",
+  "jump_boost",
+  "levitation",
+  "mining_fatigue",
+  "nausea",
+  "night_vision",
+  "poison",
+  "regeneration",
+  "resistance",
+  "saturation",
+  "slowness",
+  "slow_falling",
+  "speed",
+  "strength",
+  "water_breathing",
+  "weakness",
+  "wither",
+];
 
 
 
@@ -130,63 +163,113 @@ async function showEntityMenu(player, entity) {
 
     const tags = safe(() => entity.getTags(), []) ?? [];
     const nameTag = safe(() => entity.nameTag, "") ?? "";
+    const hasInventory = !!safe(() => entity.getComponent("inventory")?.container, null);
+    const options = [
+      {
+        label: "Basics",
+        detail: "nameTag, pet, health, remove",
+        action: () => showEntityBasics(player, entity),
+      },
+      {
+        label: "Effects",
+        detail: "view, add, remove, clear",
+        action: () => showEntityEffectsMenu(player, entity),
+      },
+      {
+        label: "Tags",
+        detail: `manage ${tags.length} tag(s)`,
+        action: () => showEntityTagsMenu(player, entity),
+      },
+      {
+        label: "Move",
+        detail: "teleport + rotation",
+        action: () => showEntityMove(player, entity),
+      },
+    ];
+
+    if (hasInventory) {
+      options.push({
+        label: "Inventory",
+        detail: "open inventory editor",
+        action: () => openInventoryEditor(player, entity),
+      });
+    }
+
+    options.push(
+      {
+        label: "Dynamic properties",
+        detail: "edit custom stored values",
+        action: () => showEntityDynamicProps(player, entity),
+      },
+      {
+        label: "Property editor",
+        detail: "manual property id/value",
+        action: () => showEntityManualProperty(player, entity),
+      },
+      {
+        label: "Run command",
+        detail: "execute as this entity",
+        action: () => showEntityRunCommand(player, entity),
+      }
+    );
 
     const form = new ActionFormData()
       .title(`Entity: ${entity.typeId}`)
       .body(
         `id: ${entity.id}\n` +
-          `nameTag: ${nameTag}\n` +
-          `tags (${tags.length}): ${tags.slice(0, 12).join(", ")}${
-            tags.length > 12 ? "..." : ""
-          }`
+          `nameTag: ${nameTag || "(none)"}\n` +
+          `tags: ${tags.length}\n` +
+          `inventory: ${hasInventory ? "yes" : "no"}`
       )
-      .button("Basics (nameTag, kill/remove)")
-      .button("Tags")
-      .button("Move (teleport/rotation)")
-      .button("Dynamic properties")
-      .button("Property editor (manual id)")
-      .button("Run command (as entity)")
       .button("Close");
+
+    for (const option of options) {
+      form.button(`${option.label}`);
+    }
 
     const res = await form.show(player);
     if (res.canceled) return;
 
-    switch (res.selection) {
-      case 0:
-        await showEntityBasics(player, entity);
-        break;
-      case 1:
-        await showEntityTagsMenu(player, entity);
-        break;
-      case 2:
-        await showEntityMove(player, entity);
-        break;
-      case 3:
-        await showEntityDynamicProps(player, entity);
-        break;
-      case 4:
-        await showEntityManualProperty(player, entity);
-        break;
-      case 5:
-        await showEntityRunCommand(player, entity);
-        break;
-      default:
-        return;
-    }
+    if (res.selection === 0) return;
+
+    const selected = options[res.selection - 1];
+    if (!selected) return;
+    await selected.action();
   }
 }
 
 async function showEntityBasics(player, entity) {
   if (!entity.isValid) return;
 
-  const form = new ModalFormData()
+  const tags = safe(() => entity.getTags(), []) ?? [];
+  const isPet = tags.includes("ac_pet") && tags.includes(getPetOwnerTag(player));
+  const healthComp = safe(() => entity.getComponent("minecraft:health"), null);
+  const currentHealth = Number(healthComp?.currentValue ?? 0);
+  const maxHealth = Number(healthComp?.effectiveMax ?? healthComp?.defaultValue ?? 0);
+  const sliderMaxHealth = Math.max(1, Math.floor(maxHealth));
+  const sliderDefaultHealth = Math.min(
+    sliderMaxHealth,
+    Math.max(1, Math.floor(currentHealth || sliderMaxHealth))
+  );
+
+  let form = new ModalFormData()
     .title("Basics")
     .textField("nameTag", "text (blank clears)", {
       defaultValue: String(entity.nameTag ?? ""),
     })
-    .slider("Kill / remove entity (drag fully right to confirm)", 0, 1, {
-      defaultValue: 0,
+    .slider("Mark as your pet", 0, 1, {
+      defaultValue: isPet ? 1 : 0,
     });
+
+  if (maxHealth > 0) {
+    form = form.slider(`Health (${sliderDefaultHealth}/${sliderMaxHealth})`, 1, sliderMaxHealth, {
+      defaultValue: sliderDefaultHealth,
+    });
+  }
+
+  form = form.slider("Kill / remove entity (drag fully right to confirm)", 0, 1, {
+    defaultValue: 0,
+  });
 
   const res = await form.show(player);
   if (res.canceled) return;
@@ -195,10 +278,139 @@ async function showEntityBasics(player, entity) {
     entity.nameTag = String(res.formValues?.[0] ?? "");
   });
 
-  const killValue = Number(res.formValues?.[1] ?? 0);
+  const petValue = Number(res.formValues?.[1] ?? 0);
+  if (petValue >= 1) {
+    safe(() => markEntityAsPet(entity, player));
+  } else if (isPet) {
+    safe(() => unmarkEntityAsPet(entity, player));
+  }
+
+  if (maxHealth > 0) {
+    const nextHealth = Number(res.formValues?.[2] ?? sliderDefaultHealth);
+    if (Number.isFinite(nextHealth) && nextHealth >= 1) {
+      safe(() => {
+        const liveHealth = entity.getComponent("minecraft:health");
+        if (!liveHealth) return;
+        const liveMaxHealth = Number(liveHealth.effectiveMax ?? liveHealth.defaultValue ?? nextHealth);
+        liveHealth.setCurrentValue(Math.min(nextHealth, liveMaxHealth));
+      });
+    }
+  }
+
+  const killValue = Number(res.formValues?.[maxHealth > 0 ? 3 : 2] ?? 0);
   if (killValue >= 1) safe(() => entity.remove());
 
   player.sendMessage("Saved basics.");
+}
+
+async function showEntityEffectsMenu(player, entity) {
+  while (true) {
+    if (!entity.isValid) return;
+
+    const activeEffects = getEntityEffects(entity);
+    const form = new ActionFormData()
+      .title("Effects")
+      .body(
+        activeEffects.length
+          ? `Active (${activeEffects.length}): ${activeEffects.slice(0, 4).map(formatEffectLabel).join(", ")}${activeEffects.length > 4 ? "..." : ""}`
+          : "No active effects."
+      )
+      .button("View active effects")
+      .button("Add effect")
+      .button("Remove effect")
+      .button("Clear all effects")
+      .button("Back");
+
+    const res = await form.show(player);
+    if (res.canceled) return;
+
+    switch (res.selection) {
+      case 0:
+        await showEntityEffectsList(player, entity);
+        break;
+      case 1:
+        await showEntityAddEffect(player, entity);
+        break;
+      case 2:
+        await showEntityRemoveEffect(player, entity);
+        break;
+      case 3:
+        safe(() => entity.runCommand("effect @s clear"));
+        player.sendMessage("Cleared all effects.");
+        break;
+      default:
+        return;
+    }
+  }
+}
+
+async function showEntityEffectsList(player, entity) {
+  const effects = getEntityEffects(entity);
+  if (!effects.length) {
+    player.sendMessage("No active effects.");
+    return;
+  }
+
+  await showPagedInfo(player, {
+    title: "Active effects",
+    items: effects.map((effect) => formatEffectLabel(effect)),
+  });
+}
+
+async function showEntityAddEffect(player, entity) {
+  const effectId = await showPagedSelection(player, {
+    title: "Add effect",
+    body: "Choose an effect to apply.",
+    items: EFFECT_OPTIONS.map((effect) => ({
+      label: prettifyEffectName(effect),
+      value: effect,
+      detail: `minecraft:${effect}`,
+    })),
+  });
+  if (!effectId || !entity.isValid) return;
+
+  const form = new ModalFormData()
+    .title(`Add effect: ${prettifyEffectName(effectId)}`)
+    .textField("Duration in seconds", "30", { defaultValue: "30" })
+    .textField("Amplifier", "0", { defaultValue: "0" })
+    .toggle("Hide particles", { defaultValue: false });
+
+  const res = await form.show(player);
+  if (res.canceled || !entity.isValid) return;
+
+  const duration = Math.max(1, Math.floor(numOr(30, res.formValues?.[0])));
+  const amplifier = Math.max(0, Math.floor(numOr(0, res.formValues?.[1])));
+  const hideParticles = !!res.formValues?.[2];
+  const command = `effect @s ${effectId} ${duration} ${amplifier} ${hideParticles}`;
+  const result = safe(() => entity.runCommand(command), null);
+
+  player.sendMessage(
+    result
+      ? `Applied ${effectId} for ${duration}s.`
+      : `Failed to apply ${effectId}.`
+  );
+}
+
+async function showEntityRemoveEffect(player, entity) {
+  const effects = getEntityEffects(entity);
+  if (!effects.length) {
+    player.sendMessage("No active effects to remove.");
+    return;
+  }
+
+  const effectId = await showPagedSelection(player, {
+    title: "Remove effect",
+    body: "Choose an active effect to clear.",
+    items: effects.map((effect) => ({
+      label: prettifyEffectName(effect.typeId),
+      value: effect.typeId,
+      detail: formatEffectLabel(effect),
+    })),
+  });
+  if (!effectId || !entity.isValid) return;
+
+  const result = safe(() => entity.runCommand(`effect @s ${effectId} 0`), null);
+  player.sendMessage(result ? `Removed ${effectId}.` : `Failed to remove ${effectId}.`);
 }
 
 
@@ -238,13 +450,15 @@ async function showEntityTagsList(player, entity) {
   if (!entity.isValid) return;
 
   const tags = safe(() => entity.getTags(), []) ?? [];
-  const text = tags.length ? tags.join("\n") : "(no tags)";
+  if (!tags.length) {
+    player.sendMessage("No tags.");
+    return;
+  }
 
-  const form = new ModalFormData()
-    .title(`Tags (${tags.length})`)
-    .textField("All tags (one per line)", "read-only", { defaultValue: text });
-
-  await form.show(player);
+  await showPagedInfo(player, {
+    title: `Tags (${tags.length})`,
+    items: tags,
+  });
 }
 
 async function showEntityTagsAdd(player, entity) {
@@ -279,30 +493,20 @@ async function showEntityTagsRemove(player, entity) {
     return;
   }
 
-  const form = new ModalFormData().title("Remove tags");
+  const tagToRemove = await showPagedSelection(player, {
+    title: "Remove tags",
+    body: "Choose a tag to remove.",
+    items: tags.map((tag) => ({ label: tag, value: tag })),
+  });
+  if (!tagToRemove || !entity.isValid) return;
 
-  
-  for (const t of tags) {
-    form.slider(`Remove: ${t}`, 0, 1, { defaultValue: 0 });
-  }
+  let removed = false;
+  try {
+    entity.removeTag(tagToRemove);
+    removed = true;
+  } catch {}
 
-  const res = await form.show(player);
-  if (res.canceled) return;
-
-  const vals = res.formValues ?? [];
-  let removed = 0;
-
-  for (let i = 0; i < tags.length; i++) {
-    const v = Number(vals[i] ?? 0);
-    if (v >= 1) {
-      try {
-        entity.removeTag(tags[i]);
-        removed++;
-      } catch {}
-    }
-  }
-
-  player.sendMessage(`Removed ${removed} tag(s).`);
+  player.sendMessage(removed ? `Removed tag: ${tagToRemove}` : `Failed to remove tag: ${tagToRemove}`);
 }
 
 
@@ -402,6 +606,88 @@ async function showEntityRunCommand(player, entity) {
   player.sendMessage(r ? `Command OK: ${r.successCount}` : "Command failed.");
 }
 
+async function showPagedInfo(player, { title, items, pageSize = DATA_TOOL_PAGE_SIZE }) {
+  let page = 0;
+  const pageCount = Math.max(1, Math.ceil(items.length / pageSize));
+
+  while (true) {
+    const start = page * pageSize;
+    const pageItems = items.slice(start, start + pageSize);
+    const form = new ActionFormData()
+      .title(`${title} (${page + 1}/${pageCount})`)
+      .body(pageItems.join("\n") || "(empty)")
+      .button(page > 0 ? "Previous" : " ")
+      .button(page < pageCount - 1 ? "Next" : " ")
+      .button("Back");
+
+    const res = await form.show(player);
+    if (res.canceled || res.selection === 2) return;
+    if (res.selection === 0 && page > 0) {
+      page--;
+      continue;
+    }
+    if (res.selection === 1 && page < pageCount - 1) {
+      page++;
+      continue;
+    }
+  }
+}
+
+async function showPagedSelection(player, { title, body, items, pageSize = DATA_TOOL_PAGE_SIZE }) {
+  let page = 0;
+  const pageCount = Math.max(1, Math.ceil(items.length / pageSize));
+
+  while (true) {
+    const start = page * pageSize;
+    const pageItems = items.slice(start, start + pageSize);
+    const form = new ActionFormData()
+      .title(`${title} (${page + 1}/${pageCount})`)
+      .body(body ?? "Select an option.")
+      .button(page > 0 ? "Previous" : " ")
+      .button(page < pageCount - 1 ? "Next" : " ")
+      .button("Back");
+
+    for (const item of pageItems) {
+      form.button(item.detail ? `${item.label} - ${item.detail}` : item.label);
+    }
+
+    const res = await form.show(player);
+    if (res.canceled || res.selection === 2) return null;
+    if (res.selection === 0 && page > 0) {
+      page--;
+      continue;
+    }
+    if (res.selection === 1 && page < pageCount - 1) {
+      page++;
+      continue;
+    }
+
+    const itemIndex = res.selection - 3;
+    const selected = pageItems[itemIndex];
+    if (selected) return selected.value;
+  }
+}
+
+function getEntityEffects(entity) {
+  const effects = safe(() => entity.getEffects?.(), []) ?? [];
+  return Array.isArray(effects) ? effects : [];
+}
+
+function formatEffectLabel(effect) {
+  const typeId = String(effect?.typeId ?? effect?.type?.id ?? effect?.type ?? "minecraft:effect");
+  const amplifier = Number(effect?.amplifier ?? 0) + 1;
+  const duration = Number(effect?.duration ?? 0);
+  return `${prettifyEffectName(typeId)} ${amplifier} (${duration}t)`;
+}
+
+function prettifyEffectName(effectId) {
+  return String(effectId)
+    .replace("minecraft:", "")
+    .split("_")
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+}
+
 
 
 function splitCsv(s) {
@@ -440,3 +726,4 @@ function safe(fn, fallback = undefined) {
     return fallback;
   }
 }
+

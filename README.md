@@ -116,6 +116,7 @@ You can also use the `:selectors` command in game to see this reference.
 - `:untrip` - Stops the wacky visuals.
 - `:spawn` - Spawns entities on you with an optional amount and name.
 - `:summon` - Alias of `:spawn`.
+- `:pet` - Spawns pet entities that teleport back to you when they drift too far away while you are on the ground.
 - `:fire` - Sets selected players on fire.
 - `:unfire` - Extinguishes selected players.
 - `:effect` - Applies a potion effect.

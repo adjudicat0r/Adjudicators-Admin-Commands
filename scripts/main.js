@@ -18,12 +18,14 @@ import { startChatSystem } from "./system/chats.js";
 import { startLoops } from "./system/loops.js";
 import { startSpawnRateSystem } from "./system/spawnrate.js";
 import { startAutobroadcastSystem } from "./system/autobroadcast.js";
+import { startPetSystem } from "./system/pet.js";
 import { startTripSystem } from "./system/trip.js";
 
 startChatSystem();
 startLoops({ intervalTicks: 2 });
 startSpawnRateSystem();
 startAutobroadcastSystem();
+startPetSystem();
 startTripSystem();
 
 world.afterEvents.playerSpawn.subscribe((event) => {

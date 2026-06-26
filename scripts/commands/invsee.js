@@ -29,8 +29,22 @@ function showWithRetry(player, buildFormFn, onOk) {
   tryShow();
 }
 
-function getInv(p) {
-  return p.getComponent("inventory")?.container ?? null;
+function getInv(target) {
+  return target.getComponent("inventory")?.container ?? null;
+}
+
+function getTargetLabel(target) {
+  try {
+    if (typeof target.name === "string" && target.name.length) return target.name;
+  } catch {}
+  try {
+    if (typeof target.nameTag === "string" && target.nameTag.length) return target.nameTag;
+  } catch {}
+  try {
+    const typeId = String(target.typeId ?? "");
+    if (typeId) return typeId;
+  } catch {}
+  return "target";
 }
 
 function getBoolProp(p, key, def = false) {
@@ -97,7 +111,7 @@ function labelForSlot(slotIndex, item) {
   return `#${slotIndex} ${shortId} x${amt}${namePart}${ench}`;
 }
 
-function openInvList(viewer, target) {
+export function openInventoryEditor(viewer, target) {
   const inv = getInv(target);
   if (!inv) {
     viewer.sendMessage("Target has no inventory.");
@@ -117,10 +131,10 @@ function openInvList(viewer, target) {
     viewer,
     () => {
       const form = new ActionFormData()
-        .title(`InvSee: ${target.name}`)
+        .title(`Inventory: ${getTargetLabel(target)}`)
         .body("Select a slot to edit.");
 
-      form.button(`Show empty slots: ${showEmpty ? "§aON" : "§cOFF"}`);
+      form.button(`Show empty slots: ${showEmpty ? "ON" : "OFF"}`);
 
       for (const s of slots) {
         const text = labelForSlot(s.slot, s.item);
@@ -138,7 +152,7 @@ function openInvList(viewer, target) {
       
       if (idx === 0) {
         setBoolProp(viewer, "acinvseeEmpty", !showEmpty);
-        return openInvList(viewer, target);
+        return openInventoryEditor(viewer, target);
       }
 
       
@@ -187,10 +201,10 @@ function openSlotActions(viewer, target, slot) {
         if (sel === 1) return openRename(viewer, target, slot);
         if (sel === 2) return openReplace(viewer, target, slot);
         if (sel === 3) return doDelete(viewer, target, slot);
-        return openInvList(viewer, target);
+        return openInventoryEditor(viewer, target);
       } else {
         if (sel === 0) return openReplace(viewer, target, slot);
-        return openInvList(viewer, target);
+        return openInventoryEditor(viewer, target);
       }
     }
   );
@@ -222,7 +236,7 @@ function openSetAmount(viewer, target, slot) {
 
       try {
         const cur = inv.getItem(slot);
-        if (!cur) return openInvList(viewer, target);
+        if (!cur) return openInventoryEditor(viewer, target);
         cur.amount = amt;
         inv.setItem(slot, cur);
       } catch {
@@ -256,7 +270,7 @@ function openRename(viewer, target, slot) {
 
       try {
         const cur = inv.getItem(slot);
-        if (!cur) return openInvList(viewer, target);
+        if (!cur) return openInventoryEditor(viewer, target);
 
         cur.nameTag = name ? `§r${name}` : undefined;
         inv.setItem(slot, cur);
@@ -322,7 +336,7 @@ function doDelete(viewer, target, slot) {
     viewer.sendMessage("Failed to delete item.");
   }
 
-  openInvList(viewer, target);
+  openInventoryEditor(viewer, target);
 }
 
 export const invseeCommand = {
@@ -346,6 +360,8 @@ export const invseeCommand = {
       player.sendMessage(`Multiple matched; opening first: ${target.name}`);
     }
 
-    openInvList(player, target);
+    openInventoryEditor(player, target);
   },
 };
+
+
