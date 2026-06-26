@@ -12,11 +12,13 @@ export class CommandManager {
   }
 
   parse(rawMessage) {
-    const text = rawMessage.slice(this.prefix.length).trim();
+    const prefix = String(rawMessage ?? "").startsWith(";") ? ";" : this.prefix;
+    if (!String(rawMessage ?? "").startsWith(prefix)) return null;
+    const text = rawMessage.slice(prefix.length).trim();
     if (!text) return null;
     const parts = text.split(/\s+/);
     const name = (parts.shift() ?? "").toLowerCase();
-    return { name, args: parts, text };
+    return { name, args: parts, text, prefix };
   }
 
   getEffectiveMinRank(cmd) {
@@ -82,7 +84,7 @@ export class CommandManager {
       t: Date.now(),
       by: player.name,
       rank: getPlayerRank(player),
-      cmd: `${this.prefix}${parsed.text}`,
+      cmd: `${parsed.prefix ?? this.prefix}${parsed.text}`,
     });
 
     const ctx = {

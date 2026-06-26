@@ -173,6 +173,7 @@ You can also use the `:selectors` command in game to see this reference.
 ### Social and Utility Extras
 
 - `:loop` - Repeats a command on an interval.
+- `:cmdqueue` - Queues a command to run later, and supports `list` and `cancel`.
 - `:script` - Owner-level command execution helper.
 - `:stresstest` - Diagnostic and testing utilities.
 

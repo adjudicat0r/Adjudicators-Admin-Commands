@@ -67,6 +67,7 @@ import { scriptCommand } from "./script.js";
 import { spawnrateCommand } from "./spawnrate.js";
 import { pathCommand } from "./path.js";
 import { jailCommand } from "./jail.js";
+import { cmdqueueCommand } from "./cmdqueue.js";
 import { timeCommand } from "./time.js";
 import { weatherCommand } from "./weather.js";
 export const manager = new CommandManager({ prefix: ":" });
@@ -148,6 +149,7 @@ manager.register(scriptCommand);
 manager.register(spawnrateCommand);
 manager.register(pathCommand);
 manager.register(jailCommand);
+manager.register(cmdqueueCommand);
 manager.register(timeCommand);
 manager.register(weatherCommand);
 
