@@ -113,6 +113,26 @@ function getKillauraProfile(p) {
   };
 }
 
+function spawnElectricTrail(dim, from, to) {
+  const dx = to.x - from.x;
+  const dy = to.y - from.y;
+  const dz = to.z - from.z;
+  const distance = Math.hypot(dx, dy, dz);
+  if (!(distance > 0)) return;
+
+  const steps = Math.max(1, Math.ceil(distance / 0.25));
+  for (let index = 0; index <= steps; index++) {
+    const t = index / steps;
+    try {
+      dim.spawnParticle("minecraft:electric_spark_particle", {
+        x: from.x + dx * t,
+        y: from.y + dy * t,
+        z: from.z + dz * t,
+      });
+    } catch {}
+  }
+}
+
 function dimIdToWorldKey(dimId) {
   const s = String(dimId ?? "").toLowerCase();
   if (s.includes("nether")) return "nether";
@@ -294,6 +314,19 @@ function handleKillaura(p) {
       target.applyDamage(profile.damage, {
         cause: EntityDamageCause.entityAttack,
         damagingEntity: p,
+      });
+    } catch {}
+
+    try {
+      const sourcePos = p.getHeadLocation?.() ?? p.location;
+      const targetPos = target.getHeadLocation?.() ?? target.location;
+      spawnElectricTrail(p.dimension, sourcePos, targetPos);
+    } catch {}
+
+    try {
+      p.dimension.playSound("game.player.attack.critical", p.location, {
+        volume: 1,
+        pitch: 1,
       });
     } catch {}
 
