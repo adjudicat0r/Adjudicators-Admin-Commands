@@ -374,7 +374,7 @@ function handleCrystalAura(p) {
 
   for (const target of targets) {
     if (!target || target.id === p.id) continue;
-    if ((target.typeId ?? "") !== "minecraft:end_crystal") continue;
+    if ((target.typeId ?? "") !== "minecraft:ender_crystal" && (target.typeId ?? "") !== "minecraft:end_crystal") continue;
 
     try {
       target.applyDamage(1, {
