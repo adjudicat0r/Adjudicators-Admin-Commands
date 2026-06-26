@@ -38,6 +38,7 @@ import { sudoCommand } from "./sudo.js";
 import { kitCommand } from "./kit.js";
 import { nameCommand } from "./name.js";
 import { nickCommand, unnickCommand, unnameCommand } from "./alias.js";
+import { noteCommand } from "./note.js";
 import {
   killauraCommand,
   unkillauraCommand,
@@ -115,6 +116,7 @@ manager.register(nameCommand);
 manager.register(unnameCommand);
 manager.register(nickCommand);
 manager.register(unnickCommand);
+manager.register(noteCommand);
 manager.register(killauraCommand);
 manager.register(unkillauraCommand);
 manager.register(kauraCommand);

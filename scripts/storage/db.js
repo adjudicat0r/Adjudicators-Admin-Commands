@@ -115,3 +115,45 @@ export function resetCommandMinRank(commandName) {
   delete perms[key];
   writeWorldJson("ac:perms", perms);
 }
+
+function normalizeNoteKey(name) {
+  return String(name ?? "").trim().toLowerCase();
+}
+
+export function getPlayerNotes(playerName) {
+  const notes = readWorldJson("ac:notes", {});
+  const key = normalizeNoteKey(playerName);
+  const list = notes[key];
+  return Array.isArray(list) ? list.slice() : [];
+}
+
+export function addPlayerNote(playerName, note) {
+  const notes = readWorldJson("ac:notes", {});
+  const key = normalizeNoteKey(playerName);
+  const list = Array.isArray(notes[key]) ? notes[key] : [];
+
+  list.push({
+    text: String(note?.text ?? "").trim(),
+    by: String(note?.by ?? "").trim(),
+    t: Number.isFinite(note?.t) ? note.t : Date.now(),
+  });
+
+  notes[key] = list;
+  writeWorldJson("ac:notes", notes);
+  return list.length;
+}
+
+export function deletePlayerNote(playerName, noteIndex1Based) {
+  const notes = readWorldJson("ac:notes", {});
+  const key = normalizeNoteKey(playerName);
+  const list = Array.isArray(notes[key]) ? notes[key] : [];
+  const index = Math.floor(Number(noteIndex1Based)) - 1;
+  if (!Number.isFinite(index) || index < 0 || index >= list.length) return false;
+
+  list.splice(index, 1);
+  if (list.length === 0) delete notes[key];
+  else notes[key] = list;
+
+  writeWorldJson("ac:notes", notes);
+  return true;
+}
