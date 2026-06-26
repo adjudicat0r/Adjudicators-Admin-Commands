@@ -17,10 +17,12 @@ import { owner } from "./system/config.js";
 import { startChatSystem } from "./system/chats.js";
 import { startLoops } from "./system/loops.js";
 import { startSpawnRateSystem } from "./system/spawnrate.js";
+import { startAutobroadcastSystem } from "./system/autobroadcast.js";
 
 startChatSystem();
 startLoops({ intervalTicks: 2 });
 startSpawnRateSystem();
+startAutobroadcastSystem();
 
 system.runInterval(() => {
   for (const player of world.getAllPlayers()) {

@@ -158,6 +158,8 @@ export function deletePlayerNote(playerName, noteIndex1Based) {
   return true;
 }
 
+
+
 function normalizeFilterEntry(text) {
   return String(text ?? "").trim().toLowerCase();
 }
@@ -203,3 +205,129 @@ export function setChatFilterMode(mode) {
   world.setDynamicProperty("ac:filterMode", next);
   return true;
 }
+
+function normalizeBroadcastKey(name) {
+  return String(name ?? "").trim().toLowerCase();
+}
+
+export function getAutobroadcasts() {
+  const data = readWorldJson("ac:autobroadcasts", {});
+  return data && typeof data === "object" ? data : {};
+}
+
+export function listAutobroadcasts() {
+  return Object.keys(getAutobroadcasts()).sort((a, b) => a.localeCompare(b));
+}
+
+export function getAutobroadcast(name) {
+  const data = getAutobroadcasts();
+  const key = normalizeBroadcastKey(name);
+  const entry = data[key];
+  return entry && typeof entry === "object" ? { ...entry } : null;
+}
+
+export function createAutobroadcast(name) {
+  const data = getAutobroadcasts();
+  const key = normalizeBroadcastKey(name);
+  if (!key) return false;
+  if (!data[key] || typeof data[key] !== "object") {
+    data[key] = {
+      messages: [],
+      intervalMs: 600000,
+      nextIndex: 0,
+      lastSentAt: 0,
+    };
+  }
+  writeWorldJson("ac:autobroadcasts", data);
+  return true;
+}
+
+export function addAutobroadcastMessage(name, message) {
+  const data = getAutobroadcasts();
+  const key = normalizeBroadcastKey(name);
+  const text = String(message ?? "").trim();
+  const entry = data[key];
+  if (!key || !text || !entry || typeof entry !== "object") return false;
+
+  const messages = Array.isArray(entry.messages) ? entry.messages.slice() : [];
+  messages.push(text);
+  data[key] = {
+    messages,
+    intervalMs: Number(entry.intervalMs) || 600000,
+    nextIndex: Number(entry.nextIndex) || 0,
+    lastSentAt: Number(entry.lastSentAt) || 0,
+  };
+  writeWorldJson("ac:autobroadcasts", data);
+  return true;
+}
+
+export function deleteAutobroadcastMessage(name, message) {
+  const data = getAutobroadcasts();
+  const key = normalizeBroadcastKey(name);
+  const text = String(message ?? "").trim();
+  const entry = data[key];
+  if (!key || !text || !entry || typeof entry !== "object") return false;
+
+  const messages = Array.isArray(entry.messages) ? entry.messages.slice() : [];
+  const index = messages.findIndex((line) => String(line ?? "").trim() === text);
+  if (index < 0) return false;
+
+  messages.splice(index, 1);
+  let nextIndex = Number(entry.nextIndex) || 0;
+  if (messages.length === 0) nextIndex = 0;
+  else if (nextIndex >= messages.length) nextIndex %= messages.length;
+
+  data[key] = {
+    messages,
+    intervalMs: Number(entry.intervalMs) || 600000,
+    nextIndex,
+    lastSentAt: Number(entry.lastSentAt) || 0,
+  };
+  writeWorldJson("ac:autobroadcasts", data);
+  return true;
+}
+
+export function setAutobroadcastInterval(name, intervalMs) {
+  const data = getAutobroadcasts();
+  const key = normalizeBroadcastKey(name);
+  const entry = data[key];
+  const ms = Math.floor(Number(intervalMs));
+  if (!key || !entry || typeof entry !== "object" || !Number.isFinite(ms) || ms < 1000) {
+    return false;
+  }
+
+  data[key] = {
+    messages: Array.isArray(entry.messages) ? entry.messages.slice() : [],
+    intervalMs: ms,
+    nextIndex: Number(entry.nextIndex) || 0,
+    lastSentAt: Number(entry.lastSentAt) || 0,
+  };
+  writeWorldJson("ac:autobroadcasts", data);
+  return true;
+}
+
+export function updateAutobroadcastState(name, patch) {
+  const data = getAutobroadcasts();
+  const key = normalizeBroadcastKey(name);
+  const entry = data[key];
+  if (!key || !entry || typeof entry !== "object") return false;
+
+  data[key] = {
+    messages: Array.isArray(entry.messages) ? entry.messages.slice() : [],
+    intervalMs: Number(entry.intervalMs) || 600000,
+    nextIndex: Number.isFinite(patch?.nextIndex) ? Number(patch.nextIndex) : Number(entry.nextIndex) || 0,
+    lastSentAt: Number.isFinite(patch?.lastSentAt) ? Number(patch.lastSentAt) : Number(entry.lastSentAt) || 0,
+  };
+  writeWorldJson("ac:autobroadcasts", data);
+  return true;
+}
+
+export function destroyAutobroadcast(name) {
+  const data = getAutobroadcasts();
+  const key = normalizeBroadcastKey(name);
+  if (!key || !Object.prototype.hasOwnProperty.call(data, key)) return false;
+  delete data[key];
+  writeWorldJson("ac:autobroadcasts", data);
+  return true;
+}
+

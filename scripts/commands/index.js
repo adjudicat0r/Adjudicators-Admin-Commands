@@ -1,0 +1,165 @@
+import { CommandManager } from "./manager.js";
+import { smiteCommand } from "./smite.js";
+import { logCommand } from "./log.js";
+import { loopCommand } from "./loop.js";
+import { rankCommand } from "./rank.js";
+import { permissionCommand } from "./permission.js";
+import { propsCommand } from "./properties.js";
+import { helpCommand } from "./help.js";
+import { btoolsCommand } from "./btools.js";
+import { clearCommand } from "./clear.js";
+import { effectCommand } from "./effect.js";
+import { uneffectCommand } from "./uneffect.js";
+import { fireCommand } from "./fire.js";
+import { unfireCommand } from "./unfire.js";
+import { killCommand } from "./kill.js";
+import { gotoCommand } from "./goto.js";
+import { bringCommand } from "./bring.js";
+import { xrayCommand } from "./xray.js";
+import { healCommand } from "./heal.js";
+import { trailCommand, untrailCommand } from "./trail.js";
+import { blindCommand, unblindCommand } from "./blind.js";
+import { godCommand, ungodCommand } from "./god.js";
+import { lockCommand, unlockCommand } from "./lock.js";
+import { topCommand } from "./top.js";
+import { posCommand } from "./pos.js";
+import { flingCommand } from "./fling.js";
+import { tpCommand } from "./tp.js";
+import { boomCommand, explodeCommand } from "./explode.js";
+import { bombCommand } from "./bomb.js";
+import { clearlagCommand } from "./clearlag.js";
+import { gearCommand } from "./gear.js";
+import { dupeCommand } from "./dupe.js";
+import { cmdbarCommand } from "./cmdbar.js";
+import { spectateCommand, unspectateCommand } from "./spectate.js";
+import { invseeCommand } from "./invsee.js";
+import { warpCommand, setwarpCommand, delwarpCommand } from "./warp.js";
+import { sudoCommand } from "./sudo.js";
+import { kitCommand } from "./kit.js";
+import { nameCommand } from "./name.js";
+import { nickCommand, unnickCommand, unnameCommand } from "./alias.js";
+import { noteCommand } from "./note.js";
+import { filterCommand } from "./filter.js";
+import { selectorsCommand } from "./selectors.js";
+import { crystalauraCommand, uncrystalauraCommand } from "./crystalaura.js";
+import {
+  killauraCommand,
+  unkillauraCommand,
+  kauraCommand,
+  unkauraCommand,
+} from "./killaura.js";
+import { testCommand } from "./tests.js";
+import { repairCommand } from "./repair.js";
+import { enchantCommand } from "./enchant.js";
+import {
+  gamemodeCommand,
+  gmsCommand,
+  gmcCommand,
+  gmaCommand,
+  gmspCommand,
+} from "./gamemode.js";
+import { announceCommand } from "./announce.js";
+import { messageCommand } from "./message.js";
+import { stresstestCommand } from "./stresstest.js";
+import { punishCommand, unpunishCommand } from "./punish.js";
+import { kickCommand } from "./kick.js";
+import { whoisCommand } from "./whois.js";
+import { scriptCommand } from "./script.js";
+import { spawnrateCommand } from "./spawnrate.js";
+import { pathCommand } from "./path.js";
+import { jailCommand } from "./jail.js";
+import { cmdqueueCommand } from "./cmdqueue.js";
+import { macroCommand } from "./macro.js";
+import { autobroadcastCommand } from "./autobroadcast.js";
+import { timeCommand } from "./time.js";
+import { weatherCommand } from "./weather.js";
+export const manager = new CommandManager({ prefix: ":" });
+
+manager.register(smiteCommand);
+manager.register(logCommand);
+manager.register(loopCommand);
+manager.register(rankCommand);
+manager.register(permissionCommand);
+manager.register(propsCommand);
+manager.register(helpCommand);
+manager.register(btoolsCommand);
+manager.register(clearCommand);
+manager.register(effectCommand);
+manager.register(uneffectCommand);
+manager.register(fireCommand);
+manager.register(unfireCommand);
+manager.register(killCommand);
+manager.register(gotoCommand);
+manager.register(bringCommand);
+manager.register(healCommand);
+manager.register(xrayCommand);
+manager.register(healCommand);
+manager.register(trailCommand);
+manager.register(untrailCommand);
+manager.register(blindCommand);
+manager.register(unblindCommand);
+manager.register(godCommand);
+manager.register(ungodCommand);
+manager.register(lockCommand);
+manager.register(unlockCommand);
+manager.register(topCommand);
+manager.register(posCommand);
+manager.register(flingCommand);
+manager.register(tpCommand);  
+manager.register(boomCommand);
+manager.register(explodeCommand);
+manager.register(bombCommand);
+manager.register(clearlagCommand);
+manager.register(gearCommand);
+manager.register(dupeCommand);
+manager.register(cmdbarCommand);
+manager.register(spectateCommand);
+manager.register(unspectateCommand);
+manager.register(invseeCommand);
+manager.register(warpCommand);
+manager.register(setwarpCommand);
+manager.register(delwarpCommand);
+manager.register(sudoCommand);
+manager.register(kitCommand);
+manager.register(nameCommand);
+manager.register(unnameCommand);
+manager.register(nickCommand);
+manager.register(unnickCommand);
+manager.register(noteCommand);
+manager.register(filterCommand);
+manager.register(selectorsCommand);
+manager.register(crystalauraCommand);
+manager.register(uncrystalauraCommand);
+manager.register(killauraCommand);
+manager.register(unkillauraCommand);
+manager.register(kauraCommand);
+manager.register(unkauraCommand);
+manager.register(testCommand);
+manager.register(repairCommand);
+manager.register(enchantCommand);
+manager.register(gamemodeCommand);
+manager.register(gmsCommand);
+manager.register(gmcCommand);
+manager.register(gmaCommand);
+manager.register(gmspCommand);
+manager.register(announceCommand);
+manager.register(messageCommand);
+manager.register(stresstestCommand);
+manager.register(punishCommand);
+manager.register(unpunishCommand);
+manager.register(kickCommand);
+manager.register(whoisCommand);
+manager.register(scriptCommand);
+manager.register(spawnrateCommand);
+manager.register(pathCommand);
+manager.register(jailCommand);
+manager.register(cmdqueueCommand);
+manager.register(macroCommand);
+manager.register(autobroadcastCommand);
+manager.register(timeCommand);
+manager.register(weatherCommand);
+
+export function handleCommandMessage(player, msg) {
+  manager.runFromChat(player, msg);
+}
+
