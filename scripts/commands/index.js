@@ -38,6 +38,12 @@ import { sudoCommand } from "./sudo.js";
 import { kitCommand } from "./kit.js";
 import { nameCommand } from "./name.js";
 import { nickCommand, unnickCommand, unnameCommand } from "./alias.js";
+import {
+  killauraCommand,
+  unkillauraCommand,
+  kauraCommand,
+  unkauraCommand,
+} from "./killaura.js";
 import { testCommand } from "./tests.js";
 import { repairCommand } from "./repair.js";
 import { enchantCommand } from "./enchant.js";
@@ -109,6 +115,10 @@ manager.register(nameCommand);
 manager.register(unnameCommand);
 manager.register(nickCommand);
 manager.register(unnickCommand);
+manager.register(killauraCommand);
+manager.register(unkillauraCommand);
+manager.register(kauraCommand);
+manager.register(unkauraCommand);
 manager.register(testCommand);
 manager.register(repairCommand);
 manager.register(enchantCommand);
