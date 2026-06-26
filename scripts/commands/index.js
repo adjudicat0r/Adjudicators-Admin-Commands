@@ -39,6 +39,7 @@ import { kitCommand } from "./kit.js";
 import { nameCommand } from "./name.js";
 import { nickCommand, unnickCommand, unnameCommand } from "./alias.js";
 import { noteCommand } from "./note.js";
+import { selectorsCommand } from "./selectors.js";
 import {
   killauraCommand,
   unkillauraCommand,
@@ -117,6 +118,7 @@ manager.register(unnameCommand);
 manager.register(nickCommand);
 manager.register(unnickCommand);
 manager.register(noteCommand);
+manager.register(selectorsCommand);
 manager.register(killauraCommand);
 manager.register(unkillauraCommand);
 manager.register(kauraCommand);

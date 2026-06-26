@@ -76,18 +76,26 @@ function selectPlayersSingle(executor, selectorText, allPlayers) {
 
   
   if (s.startsWith("entity:")) {
-    const list = sRaw
-      .slice("entity:".length)
+    const rawTypes = sRaw.slice("entity:".length).trim();
+    if (!rawTypes) return [];
+
+    const dims = ["overworld", "nether", "the_end"];
+    const out = [];
+
+    if (rawTypes.toLowerCase() === "all") {
+      for (const d of dims) {
+        const dim = world.getDimension(d);
+        for (const e of dim.getEntities()) out.push(e);
+      }
+      return out;
+    }
+
+    const list = rawTypes
       .split(",")
       .map((t) => t.trim().toLowerCase())
       .filter(Boolean);
 
     if (list.length === 0) return [];
-
-    
-    
-    const dims = ["overworld", "nether", "the_end"];
-    const out = [];
 
     for (const d of dims) {
       const dim = world.getDimension(d);
