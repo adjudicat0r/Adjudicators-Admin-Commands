@@ -131,18 +131,6 @@ world.afterEvents.itemUse.subscribe((event) => {
 });
 
 
-world.afterEvents.entityDie.subscribe((event) => {
-  const killer = event.damageSource.damagingEntity;
-  const victim = event.deadEntity;
-  if (!(killer && victim)) return;
-
-  if (killer.typeId === "minecraft:player") {
-    try {
-      victim.runCommand("summon fireworks_rocket");
-    } catch {}
-  }
-});
-
 const VEIN_TARGETS = new Set([
   
   "minecraft:coal_ore",
