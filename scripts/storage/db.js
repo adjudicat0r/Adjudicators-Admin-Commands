@@ -157,3 +157,49 @@ export function deletePlayerNote(playerName, noteIndex1Based) {
   writeWorldJson("ac:notes", notes);
   return true;
 }
+
+function normalizeFilterEntry(text) {
+  return String(text ?? "").trim().toLowerCase();
+}
+
+export function getChatFilterList() {
+  const list = readWorldJson("ac:filter", []);
+  return Array.isArray(list) ? list.slice() : [];
+}
+
+export function addChatFilterEntry(text) {
+  const entry = normalizeFilterEntry(text);
+  if (!entry) return false;
+
+  const list = getChatFilterList();
+  if (list.includes(entry)) return true;
+  list.push(entry);
+  list.sort((a, b) => a.localeCompare(b));
+  writeWorldJson("ac:filter", list);
+  return true;
+}
+
+export function removeChatFilterEntry(text) {
+  const entry = normalizeFilterEntry(text);
+  if (!entry) return false;
+
+  const list = getChatFilterList();
+  const index = list.indexOf(entry);
+  if (index < 0) return false;
+  list.splice(index, 1);
+  writeWorldJson("ac:filter", list);
+  return true;
+}
+
+export function getChatFilterMode() {
+  const raw = world.getDynamicProperty("ac:filterMode");
+  const mode = String(raw ?? "block").trim().toLowerCase();
+  return mode === "scramble" || mode === "redact" ? mode : "block";
+}
+
+export function setChatFilterMode(mode) {
+  const next = String(mode ?? "").trim().toLowerCase();
+  if (next !== "block" && next !== "scramble" && next !== "redact") return false;
+  world.setDynamicProperty("ac:filterMode", next);
+  return true;
+}
