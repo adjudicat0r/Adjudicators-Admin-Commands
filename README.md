@@ -137,6 +137,7 @@ You can also use the `:selectors` command in game to see this reference.
 - `:path` - Streams a smarter knockback-based path toward coordinates.
 - `:lock` - Locks selected players in place.
 - `:unlock` - Releases locked players.
+- `:jail` - Teleports players into a timed mini jail and restores the replaced blocks after release.
 
 ### Combat and World Control
 
