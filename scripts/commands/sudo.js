@@ -23,7 +23,7 @@ export const sudoCommand = {
       return;
     }
 
-    const targets = selectPlayers(player, selector);
+    const targets = selectPlayers(player, selector).filter((target) => target?.typeId === "minecraft:player");
     if (!targets.length) {
       player.sendMessage(`No targets matched: ${selector}`);
       return;
