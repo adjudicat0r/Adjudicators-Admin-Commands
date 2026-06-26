@@ -108,7 +108,7 @@ function getKillauraProfile(p) {
 
   return {
     damage: Math.max(1, Math.round(base * 10) / 10),
-    knockback: 0.25 + knockbackLevel * 0.25,
+    knockback: (0.25 + knockbackLevel * 0.25) * 4,
     fireSeconds: fireAspectLevel === 1 ? 4 : fireAspectLevel >= 2 ? 8 : 0,
   };
 }
