@@ -71,6 +71,7 @@ import { jailCommand } from "./jail.js";
 import { cmdqueueCommand } from "./cmdqueue.js";
 import { macroCommand } from "./macro.js";
 import { autobroadcastCommand } from "./autobroadcast.js";
+import { motdCommand } from "./motd.js";
 import { timeCommand } from "./time.js";
 import { weatherCommand } from "./weather.js";
 export const manager = new CommandManager({ prefix: ":" });
@@ -156,10 +157,10 @@ manager.register(jailCommand);
 manager.register(cmdqueueCommand);
 manager.register(macroCommand);
 manager.register(autobroadcastCommand);
+manager.register(motdCommand);
 manager.register(timeCommand);
 manager.register(weatherCommand);
 
 export function handleCommandMessage(player, msg) {
   manager.runFromChat(player, msg);
 }
-

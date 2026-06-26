@@ -1,4 +1,4 @@
-# Adjudicators Admin Commands
+﻿# Adjudicators Admin Commands
 
 Admin and utility command pack for Minecraft Bedrock Edition.
 
@@ -175,7 +175,9 @@ You can also use the `:selectors` command in game to see this reference.
 
 - `:loop` - Repeats a command on an interval.
 - `:cmdqueue` - Queues a command to run later, and supports `list` and `cancel`.
+- `:macro` - Saves, lists, runs, edits, and destroys multi-command sequences stored in world data.
 - `:autobroadcast` - Configures rotating timed announcements stored in world data.
+- `:motd` - Sets or clears the message of the day shown whenever a player spawns.
 - `:script` - Owner-level command execution helper.
 - `:stresstest` - Diagnostic and testing utilities.
 
@@ -212,4 +214,3 @@ The background systems in `scripts/system/` handle:
 - [`scripts/system/`](scripts/system) - loops, chat formatting, config, and automation
 - [`scripts/storage/db.js`](scripts/storage/db.js) - world-backed persistence helpers
 - [`scripts/lib/selectors.js`](scripts/lib/selectors.js) - selector parsing and player lookup
-

@@ -11,7 +11,7 @@ import { handleHistoryToolUse } from "./buildingtools/historytool.js";
 import { handleCloneToolClick } from "./buildingtools/clonetool.js";
 import { handleBuildToolBlock } from "./buildingtools/buildtool.js";
 
-import { setPlayerRank } from "./storage/db.js";
+import { getMotd, setPlayerRank } from "./storage/db.js";
 import { owner } from "./system/config.js";
 
 import { startChatSystem } from "./system/chats.js";
@@ -23,6 +23,16 @@ startChatSystem();
 startLoops({ intervalTicks: 2 });
 startSpawnRateSystem();
 startAutobroadcastSystem();
+
+world.afterEvents.playerSpawn.subscribe((event) => {
+  const player = event.player;
+  const motd = getMotd();
+  if (!player || !motd) return;
+
+  try {
+    player.sendMessage(`§6[MOTD]§r ${motd}`);
+  } catch {}
+});
 
 system.runInterval(() => {
   for (const player of world.getAllPlayers()) {

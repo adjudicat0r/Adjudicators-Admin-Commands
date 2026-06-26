@@ -158,7 +158,68 @@ export function deletePlayerNote(playerName, noteIndex1Based) {
   return true;
 }
 
+function normalizeMacroKey(name) {
+  return String(name ?? "").trim().toLowerCase();
+}
 
+export function listMacros() {
+  const macros = readWorldJson("ac:macros", {});
+  return Object.keys(macros).sort((a, b) => a.localeCompare(b));
+}
+
+export function getMacro(name) {
+  const macros = readWorldJson("ac:macros", {});
+  const key = normalizeMacroKey(name);
+  const commands = macros[key];
+  return Array.isArray(commands) ? commands.slice() : null;
+}
+
+export function createMacro(name) {
+  const macros = readWorldJson("ac:macros", {});
+  const key = normalizeMacroKey(name);
+  if (!key) return false;
+  if (!Array.isArray(macros[key])) macros[key] = [];
+  writeWorldJson("ac:macros", macros);
+  return true;
+}
+
+export function addMacroCommand(name, commandLine) {
+  const macros = readWorldJson("ac:macros", {});
+  const key = normalizeMacroKey(name);
+  const text = String(commandLine ?? "").trim();
+  if (!key || !text) return false;
+
+  const commands = Array.isArray(macros[key]) ? macros[key] : [];
+  commands.push(text);
+  macros[key] = commands;
+  writeWorldJson("ac:macros", macros);
+  return true;
+}
+
+export function deleteMacroCommand(name, commandLine) {
+  const macros = readWorldJson("ac:macros", {});
+  const key = normalizeMacroKey(name);
+  const text = String(commandLine ?? "").trim();
+  const commands = Array.isArray(macros[key]) ? macros[key].slice() : null;
+  if (!commands || !text) return false;
+
+  const index = commands.findIndex((entry) => String(entry ?? "").trim() === text);
+  if (index < 0) return false;
+
+  commands.splice(index, 1);
+  macros[key] = commands;
+  writeWorldJson("ac:macros", macros);
+  return true;
+}
+
+export function destroyMacro(name) {
+  const macros = readWorldJson("ac:macros", {});
+  const key = normalizeMacroKey(name);
+  if (!key || !Object.prototype.hasOwnProperty.call(macros, key)) return false;
+  delete macros[key];
+  writeWorldJson("ac:macros", macros);
+  return true;
+}
 
 function normalizeFilterEntry(text) {
   return String(text ?? "").trim().toLowerCase();
@@ -331,3 +392,19 @@ export function destroyAutobroadcast(name) {
   return true;
 }
 
+export function getMotd() {
+  const raw = world.getDynamicProperty("ac:motd");
+  return typeof raw === "string" && raw.length ? raw : null;
+}
+
+export function setMotd(text) {
+  const value = String(text ?? "").trim();
+  if (!value) return false;
+  world.setDynamicProperty("ac:motd", value);
+  return true;
+}
+
+export function clearMotd() {
+  world.setDynamicProperty("ac:motd", undefined);
+  return true;
+}
