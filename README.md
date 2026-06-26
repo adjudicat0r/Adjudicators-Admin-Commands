@@ -114,6 +114,8 @@ You can also use the `:selectors` command in game to see this reference.
 - `:unblind` - Clears the blind/fade effect.
 - `:trip` - Wacky visuals for selected players.
 - `:untrip` - Stops the wacky visuals.
+- `:spawn` - Spawns entities on you with an optional amount and name.
+- `:summon` - Alias of `:spawn`.
 - `:fire` - Sets selected players on fire.
 - `:unfire` - Extinguishes selected players.
 - `:effect` - Applies a potion effect.
