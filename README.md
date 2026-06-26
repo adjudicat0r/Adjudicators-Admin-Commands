@@ -1,4 +1,4 @@
-# Adjudicators Admin Commands
+﻿# Adjudicators Admin Commands
 
 Admin and utility command pack for Minecraft Bedrock Edition.
 
@@ -138,6 +138,7 @@ You can also use the `:selectors` command in game to see this reference.
 - `:spectate` - Starts spectating a target.
 - `:unspectate` - Stops spectating.
 - `:path` - Streams a smarter knockback-based path toward coordinates.
+- `:backrooms` - Teleports selected players to `9999999 9999999 9999999`.
 - `:lock` - Locks selected players in place.
 - `:unlock` - Releases locked players.
 - `:jail` - Teleports players into a timed mini jail and restores the replaced blocks after release.
@@ -216,4 +217,3 @@ The background systems in `scripts/system/` handle:
 - [`scripts/system/`](scripts/system) - loops, chat formatting, config, and automation
 - [`scripts/storage/db.js`](scripts/storage/db.js) - world-backed persistence helpers
 - [`scripts/lib/selectors.js`](scripts/lib/selectors.js) - selector parsing and player lookup
-

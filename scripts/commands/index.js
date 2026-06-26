@@ -169,4 +169,3 @@ manager.register(weatherCommand);
 export function handleCommandMessage(player, msg) {
   manager.runFromChat(player, msg);
 }
-
