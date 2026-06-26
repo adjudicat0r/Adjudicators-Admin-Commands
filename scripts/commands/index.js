@@ -40,6 +40,7 @@ import { nameCommand } from "./name.js";
 import { nickCommand, unnickCommand, unnameCommand } from "./alias.js";
 import { noteCommand } from "./note.js";
 import { selectorsCommand } from "./selectors.js";
+import { crystalauraCommand, uncrystalauraCommand } from "./crystalaura.js";
 import {
   killauraCommand,
   unkillauraCommand,
@@ -119,6 +120,8 @@ manager.register(nickCommand);
 manager.register(unnickCommand);
 manager.register(noteCommand);
 manager.register(selectorsCommand);
+manager.register(crystalauraCommand);
+manager.register(uncrystalauraCommand);
 manager.register(killauraCommand);
 manager.register(unkillauraCommand);
 manager.register(kauraCommand);

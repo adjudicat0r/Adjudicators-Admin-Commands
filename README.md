@@ -12,7 +12,7 @@ This behavior pack adds a large command system, building tools, player utilities
 - Moderation helpers for punish, kick, notes, logs, and rank management
 - Selector support for players, entities, properties, and proximity queries
 - Pathfinding and movement helpers, including `:path`
-- Optional combat utilities like `:killaura`
+- Optional combat utilities like `:killaura` and `:crystalaura`
 - Persistent world-backed storage for logs, permissions, notes, and more
 
 ## Requirements
@@ -151,6 +151,8 @@ You can also use the `:selectors` command in game to see this reference.
 - `:unkillaura` - Disables killaura.
 - `:kaura` - Alias of `:killaura`.
 - `:unkaura` - Alias of `:unkillaura`.
+- `:crystalaura` - Automatically attacks nearby end crystals around selected players.
+- `:uncrystalaura` - Disables crystalaura.
 
 ### Building and Editing
 

@@ -124,7 +124,7 @@ function spawnElectricTrail(dim, from, to) {
   for (let index = 0; index <= steps; index++) {
     const t = index / steps;
     try {
-      dim.spawnParticle("minecraft:electric_spark_particle", {
+      dim.spawnParticle("minecraft:glow_particle", {
         x: from.x + dx * t,
         y: from.y + dy * t,
         z: from.z + dz * t,
@@ -228,6 +228,7 @@ const HANDLERS = [
   handleTrail,
   handleBlind,
   handleKillaura,
+  handleCrystalAura,
   handleGod,
   handlePunish,
   handleLock,
@@ -237,6 +238,7 @@ const HANDLERS = [
 let damageHooked = false;
 let auraTick = 0;
 const auraCooldown = new Map();
+const crystalAuraCooldown = new Map();
 function hookGodDamageCancel() {
   if (damageHooked) return;
   damageHooked = true;
@@ -286,7 +288,7 @@ function handleKillaura(p) {
   if (range <= 0) return;
 
   const lastTick = auraCooldown.get(p.id) ?? -999999;
-  if (auraTick - lastTick < 4) return;
+  if (auraTick - lastTick < 9) return;
   auraCooldown.set(p.id, auraTick);
 
   const profile = getKillauraProfile(p);
@@ -346,6 +348,39 @@ function handleKillaura(p) {
         { x: kbX / kbLen * profile.knockback, z: kbZ / kbLen * profile.knockback },
         0.18
       );
+    } catch {}
+  }
+}
+
+function handleCrystalAura(p) {
+  if (p.getDynamicProperty("accrystalaura") !== true) return;
+
+  const range = getNumberProp(p, "accrystalauraRange") ?? 3;
+  if (range <= 0) return;
+
+  const lastTick = crystalAuraCooldown.get(p.id) ?? -999999;
+  if (auraTick - lastTick < 9) return;
+  crystalAuraCooldown.set(p.id, auraTick);
+
+  let targets = [];
+  try {
+    targets = p.dimension.getEntities({
+      location: p.location,
+      maxDistance: range,
+    });
+  } catch {
+    return;
+  }
+
+  for (const target of targets) {
+    if (!target || target.id === p.id) continue;
+    if ((target.typeId ?? "") !== "minecraft:end_crystal") continue;
+
+    try {
+      target.applyDamage(1, {
+        cause: EntityDamageCause.entityAttack,
+        damagingEntity: p,
+      });
     } catch {}
   }
 }
