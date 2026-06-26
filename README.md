@@ -94,12 +94,12 @@ You can also use the `:selectors` command in game to see this reference.
 - `:rank` - Gets or sets player ranks.
 - `:permission` - Views or changes per-command rank overrides.
 - `:note` - Adds, lists, or deletes admin notes on players.
-- `:filter` - Manages blocked chat words and phrases with `block`, `scramble`, and `redact` modes, without affecting command usage.
+- `:filter` - Manages blocked chat words and phrases with `block`, `scramble`, and `redact` modes.
 - `:selectors` - Shows selector syntax and usage examples.
-- `:script` - Runs an arbitrary command as a delayed script action for owner-level control.
+- `:script` - Runs an arbitrary command as a script action.
 - `:sudo` - Runs a command as selected players.
-- `:spawnrate` - Adjusts the server-side spawn multiplier for selected entities.
-- `:stresstest` - Sends visual or particle-style stress test output.
+- `:spawnrate` - Adjusts the server side spawn multiplier for selected entities.
+- `:stresstest` - Attempts to crash a client
 
 ### Player Utilities
 
@@ -124,12 +124,18 @@ You can also use the `:selectors` command in game to see this reference.
 - `:message` - Sends a private message or reply-style conversation.
 - `:cmdbar` - Opens a command bar UI for quick command entry.
 - `:announce` - Shows a popup announcement to everyone.
+- `:kick` - Kicks selected players with an optional message.
 - `:kit` - Saves and loads inventory kits.
 - `:invsee` - Opens another player's inventory for viewing and editing.
 
 ### Movement and Positioning
 
 - `:tp` - Teleports selected players.
+- `:gamemode` - Sets the gamemode for selected players.
+- `:gms` - Shortcut for survival mode.
+- `:gmc` - Shortcut for creative mode.
+- `:gma` - Shortcut for adventure mode.
+- `:gmsp` - Shortcut for spectator mode.
 - `:goto` - Saves or uses named destinations.
 - `:bring` - Brings selected players to you.
 - `:pos` - Shows coordinates for selected players.
@@ -147,6 +153,8 @@ You can also use the `:selectors` command in game to see this reference.
 
 - `:smite` - Strikes selected players with lightning.
 - `:kill` - Kills selected players.
+- `:punish` - Forces selected players into spectator and disables movement.
+- `:unpunish` - Restores movement and the saved gamemode after punishment.
 - `:time` - Sets the world time to `day`, `night`, `sunrise`, or `sunset`.
 - `:weather` - Sets the world weather to `clear`, `rain`, or `thunder`/`thunderstorm`.
 - `:bomb` - Creates a destructive blast at selected targets.
