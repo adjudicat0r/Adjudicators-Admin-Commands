@@ -20,7 +20,17 @@ function runNameAction({ player, args, usage, clearOnly }) {
   let count = 0;
   for (const target of targets) {
     try {
-      target.setDynamicProperty("acname", shouldClear ? undefined : raw);
+      const isPlayer = typeof target?.name === "string";
+      const nextNameTag = shouldClear ? (isPlayer ? target.name : "") : raw;
+
+      try {
+        target.nameTag = nextNameTag;
+      } catch {}
+
+      if (isPlayer) {
+        target.setDynamicProperty("acname", shouldClear ? undefined : raw);
+      }
+
       count++;
     } catch {}
   }
