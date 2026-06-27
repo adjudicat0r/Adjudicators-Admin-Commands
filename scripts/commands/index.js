@@ -68,6 +68,7 @@ import {
 import { announceCommand } from "./announce.js";
 import { annoyCommand, unannoyCommand } from "./annoy.js";
 import { messageCommand } from "./message.js";
+import { shipCommand } from "./ship.js";
 import { stresstestCommand } from "./stresstest.js";
 import { punishCommand, unpunishCommand } from "./punish.js";
 import { kickCommand } from "./kick.js";
@@ -166,6 +167,7 @@ manager.register(announceCommand);
 manager.register(annoyCommand);
 manager.register(unannoyCommand);
 manager.register(messageCommand);
+manager.register(shipCommand);
 manager.register(stresstestCommand);
 manager.register(punishCommand);
 manager.register(unpunishCommand);
