@@ -163,10 +163,9 @@ function handleBlind(p) {
 }
 function handleNameTag(p) {
   const forced = getStringProp(p, "acname");
-  if (!forced) return;
 
   try {
-    p.nameTag = forced;
+    p.nameTag = forced || p.name;
   } catch {}
 }
 
