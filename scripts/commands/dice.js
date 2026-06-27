@@ -41,3 +41,14 @@ export const diceCommand = {
     );
   },
 };
+
+export const rollCommand = {
+  ...diceCommand,
+  name: "roll",
+  usage: ":roll <count>d<sides>",
+  description: "Alias of :dice.",
+  examples: [
+    ":roll 2d20",
+    ":roll 1d6",
+  ],
+};
