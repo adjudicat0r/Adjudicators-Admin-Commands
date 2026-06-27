@@ -1,5 +1,7 @@
 export function makeDefaultEntityName(playerName, entityId) {
-  const shortId = String(entityId ?? "").replace(/^minecraft:/, "");
+  const shortId = String(entityId ?? "")
+    .replace(/^minecraft:/, "")
+    .replace(/_/g, " ");
   return `${playerName}'s ${shortId}`;
 }
 
