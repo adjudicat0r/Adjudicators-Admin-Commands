@@ -15,8 +15,22 @@ function getStringProp(player, key) {
 
 function getChatName(player) {
   const forced = getStringProp(player, "acname");
-  if (!forced) return player.name;
-  return forced.replace(new RegExp(`^${S}r`), "");
+  if (forced) return forced.replace(new RegExp(`^${S}r`), "");
+
+  try {
+    const name = String(player?.name ?? "").trim();
+    if (name) return name;
+  } catch {}
+
+  try {
+    const nameTag = String(player?.nameTag ?? "").trim();
+    if (nameTag) return nameTag.replace(new RegExp(`${S}.`, "g"), "");
+  } catch {}
+
+  const typeId = String(player?.typeId ?? "target");
+  return typeId
+    .replace(/^minecraft:/i, "")
+    .replace(/_/g, " ");
 }
 
 export function sendChatAsPlayer(player, message) {
