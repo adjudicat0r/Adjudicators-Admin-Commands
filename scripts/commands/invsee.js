@@ -1,8 +1,14 @@
-
-import { system } from "@minecraft/server";
+import { EquipmentSlot, ItemStack, system } from "@minecraft/server";
 import { ActionFormData, ModalFormData } from "@minecraft/server-ui";
-import { ItemStack } from "@minecraft/server";
 import { selectPlayers } from "../lib/selectors.js";
+
+const EQUIPMENT_ENTRIES = [
+  { key: "offhand", slot: EquipmentSlot.Offhand, label: "Offhand" },
+  { key: "head", slot: EquipmentSlot.Head, label: "Armor Head" },
+  { key: "chest", slot: EquipmentSlot.Chest, label: "Armor Chest" },
+  { key: "legs", slot: EquipmentSlot.Legs, label: "Armor Legs" },
+  { key: "feet", slot: EquipmentSlot.Feet, label: "Armor Feet" },
+];
 
 function showWithRetry(player, buildFormFn, onOk) {
   const tryShow = () => {
@@ -31,6 +37,10 @@ function showWithRetry(player, buildFormFn, onOk) {
 
 function getInv(target) {
   return target.getComponent("inventory")?.container ?? null;
+}
+
+function getEquippable(target) {
+  return target.getComponent("equippable") ?? null;
 }
 
 function getTargetLabel(target) {
@@ -71,7 +81,6 @@ function safeName(item) {
   }
 }
 
-
 function enchantSummary(item) {
   try {
     const ench = item.getComponent("enchantable");
@@ -79,7 +88,7 @@ function enchantSummary(item) {
     const list = ench.getEnchantments?.() ?? [];
     if (!list.length) return "";
     return " | " + list
-      .map(e => `${e.type.id.split(":").pop()} ${e.level}`)
+      .map((e) => `${e.type.id.split(":").pop()} ${e.level}`)
       .join(", ");
   } catch {
     return "";
@@ -97,48 +106,109 @@ function iconForItem(item) {
   }
 }
 
-function labelForSlot(slotIndex, item) {
-  if (!item) return `#${slotIndex} (empty)`;
+function getTargetEntries(target, showEmpty) {
+  const entries = [];
+  const inv = getInv(target);
+
+  if (inv) {
+    for (let i = 0; i < inv.size; i++) {
+      const item = inv.getItem(i);
+      if (!showEmpty && !item) continue;
+      entries.push({
+        kind: "inventory",
+        key: `inv:${i}`,
+        slot: i,
+        label: `#${i}`,
+        item,
+      });
+    }
+  }
+
+  const equippable = getEquippable(target);
+  if (equippable) {
+    for (const entry of EQUIPMENT_ENTRIES) {
+      const item = equippable.getEquipment?.(entry.slot) ?? null;
+      if (!showEmpty && !item) continue;
+      entries.push({
+        kind: "equipment",
+        key: `eq:${entry.key}`,
+        slot: entry.slot,
+        label: entry.label,
+        item,
+      });
+    }
+  }
+
+  return entries;
+}
+
+function getEntryItem(target, entry) {
+  if (!entry) return null;
+
+  if (entry.kind === "equipment") {
+    return getEquippable(target)?.getEquipment?.(entry.slot) ?? null;
+  }
+
+  return getInv(target)?.getItem(entry.slot) ?? null;
+}
+
+function setEntryItem(target, entry, item) {
+  if (!entry) return false;
+
+  try {
+    if (entry.kind === "equipment") {
+      const equippable = getEquippable(target);
+      if (!equippable) return false;
+      equippable.setEquipment?.(entry.slot, item);
+      return true;
+    }
+
+    const inv = getInv(target);
+    if (!inv) return false;
+    inv.setItem(entry.slot, item);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function labelForSlot(entry, item) {
+  const slotLabel = entry?.label ?? `#${entry?.slot ?? "?"}`;
+  if (!item) return `${slotLabel} (empty)`;
 
   const id = item.typeId ?? "unknown";
   const shortId = id.includes(":") ? id.split(":")[1] : id;
   const amt = item.amount ?? 1;
-
   const nm = safeName(item);
   const ench = enchantSummary(item);
   const namePart = nm ? ` | ${nm}` : "";
 
-  return `#${slotIndex} ${shortId} x${amt}${namePart}${ench}`;
+  return `${slotLabel} ${shortId} x${amt}${namePart}${ench}`;
 }
 
 export function openInventoryEditor(viewer, target) {
-  const inv = getInv(target);
-  if (!inv) {
-    viewer.sendMessage("Target has no inventory.");
+  const hasInventory = !!getInv(target);
+  const hasEquippable = !!getEquippable(target);
+  if (!hasInventory && !hasEquippable) {
+    viewer.sendMessage("Target has no inventory or equipment.");
     return;
   }
 
   const showEmpty = getBoolProp(viewer, "acinvseeEmpty", false);
-
-  const slots = [];
-  for (let i = 0; i < inv.size; i++) {
-    const it = inv.getItem(i);
-    if (!showEmpty && !it) continue;
-    slots.push({ slot: i, item: it });
-  }
+  const slots = getTargetEntries(target, showEmpty);
 
   showWithRetry(
     viewer,
     () => {
       const form = new ActionFormData()
         .title(`Inventory: ${getTargetLabel(target)}`)
-        .body("Select a slot to edit.");
+        .body("Select an inventory, armor, or offhand slot to edit.");
 
       form.button(`Show empty slots: ${showEmpty ? "ON" : "OFF"}`);
 
       for (const s of slots) {
-        const text = labelForSlot(s.slot, s.item);
-        const icon = s.item ? iconForItem(s.item) : "textures/ui/icon_trash.png"; 
+        const text = labelForSlot(s, s.item);
+        const icon = s.item ? iconForItem(s.item) : "textures/ui/icon_trash.png";
         form.button(text, icon);
       }
 
@@ -149,36 +219,31 @@ export function openInventoryEditor(viewer, target) {
       const idx = res.selection;
       if (idx == null) return;
 
-      
       if (idx === 0) {
         setBoolProp(viewer, "acinvseeEmpty", !showEmpty);
         return openInventoryEditor(viewer, target);
       }
 
-      
       const closeIndex = 1 + slots.length;
       if (idx === closeIndex) return;
 
-      
       const chosen = slots[idx - 1];
       if (!chosen) return;
-      openSlotActions(viewer, target, chosen.slot);
+      openSlotActions(viewer, target, chosen);
     }
   );
 }
 
-function openSlotActions(viewer, target, slot) {
-  const inv = getInv(target);
-  if (!inv) return;
-
-  const item = inv.getItem(slot);
+function openSlotActions(viewer, target, entry) {
+  if (!entry) return;
+  const item = getEntryItem(target, entry);
 
   showWithRetry(
     viewer,
     () => {
       const form = new ActionFormData()
-        .title(`Edit Slot #${slot}`)
-        .body(labelForSlot(slot, item));
+        .title(`Edit ${entry.label}`)
+        .body(labelForSlot(entry, item));
 
       if (item) {
         form.button("Set amount", "textures/ui/strength_effect.png");
@@ -197,25 +262,22 @@ function openSlotActions(viewer, target, slot) {
       if (sel == null) return;
 
       if (item) {
-        if (sel === 0) return openSetAmount(viewer, target, slot);
-        if (sel === 1) return openRename(viewer, target, slot);
-        if (sel === 2) return openReplace(viewer, target, slot);
-        if (sel === 3) return doDelete(viewer, target, slot);
-        return openInventoryEditor(viewer, target);
-      } else {
-        if (sel === 0) return openReplace(viewer, target, slot);
+        if (sel === 0) return openSetAmount(viewer, target, entry);
+        if (sel === 1) return openRename(viewer, target, entry);
+        if (sel === 2) return openReplace(viewer, target, entry);
+        if (sel === 3) return doDelete(viewer, target, entry);
         return openInventoryEditor(viewer, target);
       }
+
+      if (sel === 0) return openReplace(viewer, target, entry);
+      return openInventoryEditor(viewer, target);
     }
   );
 }
 
-function openSetAmount(viewer, target, slot) {
-  const inv = getInv(target);
-  if (!inv) return;
-
-  const item = inv.getItem(slot);
-  if (!item) return openSlotActions(viewer, target, slot);
+function openSetAmount(viewer, target, entry) {
+  const item = getEntryItem(target, entry);
+  if (!item) return openSlotActions(viewer, target, entry);
 
   const max = item.maxAmount ?? 64;
 
@@ -223,37 +285,36 @@ function openSetAmount(viewer, target, slot) {
     viewer,
     () => {
       const form = new ModalFormData()
-        .title(`Set amount (#${slot})`)
+        .title(`Set amount (${entry.label})`)
         .textField(`Amount (1-${max})`, "e.g. 16", { defaultValue: String(item.amount ?? 1) });
       return form;
     },
     (res) => {
       const raw = String(res.formValues?.[0] ?? "").trim();
       const n = Number(raw);
-      if (!Number.isFinite(n)) return openSlotActions(viewer, target, slot);
+      if (!Number.isFinite(n)) return openSlotActions(viewer, target, entry);
 
       const amt = Math.max(1, Math.min(max, Math.floor(n)));
 
       try {
-        const cur = inv.getItem(slot);
+        const cur = getEntryItem(target, entry);
         if (!cur) return openInventoryEditor(viewer, target);
         cur.amount = amt;
-        inv.setItem(slot, cur);
+        if (!setEntryItem(target, entry, cur)) {
+          viewer.sendMessage("Failed to set amount.");
+        }
       } catch {
         viewer.sendMessage("Failed to set amount.");
       }
 
-      openSlotActions(viewer, target, slot);
+      openSlotActions(viewer, target, entry);
     }
   );
 }
 
-function openRename(viewer, target, slot) {
-  const inv = getInv(target);
-  if (!inv) return;
-
-  const item = inv.getItem(slot);
-  if (!item) return openSlotActions(viewer, target, slot);
+function openRename(viewer, target, entry) {
+  const item = getEntryItem(target, entry);
+  if (!item) return openSlotActions(viewer, target, entry);
 
   const curName = safeName(item).replace(/^§r/, "");
 
@@ -261,7 +322,7 @@ function openRename(viewer, target, slot) {
     viewer,
     () => {
       const form = new ModalFormData()
-        .title(`Rename (#${slot})`)
+        .title(`Rename (${entry.label})`)
         .textField("Name (empty clears)", "e.g. Banned Stick", { defaultValue: curName });
       return form;
     },
@@ -269,70 +330,64 @@ function openRename(viewer, target, slot) {
       const name = String(res.formValues?.[0] ?? "").trim();
 
       try {
-        const cur = inv.getItem(slot);
+        const cur = getEntryItem(target, entry);
         if (!cur) return openInventoryEditor(viewer, target);
 
         cur.nameTag = name ? `§r${name}` : undefined;
-        inv.setItem(slot, cur);
+        if (!setEntryItem(target, entry, cur)) {
+          viewer.sendMessage("Failed to rename.");
+        }
       } catch {
         viewer.sendMessage("Failed to rename.");
       }
 
-      openSlotActions(viewer, target, slot);
+      openSlotActions(viewer, target, entry);
     }
   );
 }
 
-function openReplace(viewer, target, slot) {
-  const inv = getInv(target);
-  if (!inv) return;
-
-  const item = inv.getItem(slot);
+function openReplace(viewer, target, entry) {
+  const item = getEntryItem(target, entry);
   const oldId = item?.typeId ?? "minecraft:stone";
 
   showWithRetry(
     viewer,
     () => {
       const form = new ModalFormData()
-        .title(`Set itemId (#${slot})`)
+        .title(`Set itemId (${entry.label})`)
         .textField("Item id", "minecraft:diamond_sword", { defaultValue: oldId });
       return form;
     },
     (res) => {
       const raw = String(res.formValues?.[0] ?? "").trim();
-      if (!raw) return openSlotActions(viewer, target, slot);
+      if (!raw) return openSlotActions(viewer, target, entry);
 
       const itemId = raw.startsWith("minecraft:") ? raw : `minecraft:${raw}`;
 
       try {
-        const existing = inv.getItem(slot);
+        const existing = getEntryItem(target, entry);
         const keepAmt = existing?.amount ?? 1;
         const keepName = existing ? safeName(existing) : "";
 
         const next = new ItemStack(itemId, 1);
-
-        
         const max = next.maxAmount ?? 64;
         next.amount = Math.max(1, Math.min(max, keepAmt));
         if (keepName) next.nameTag = keepName;
 
-        inv.setItem(slot, next);
+        if (!setEntryItem(target, entry, next)) {
+          viewer.sendMessage("Failed (bad item id or API limits).");
+        }
       } catch {
         viewer.sendMessage("Failed (bad item id or API limits).");
       }
 
-      openSlotActions(viewer, target, slot);
+      openSlotActions(viewer, target, entry);
     }
   );
 }
 
-function doDelete(viewer, target, slot) {
-  const inv = getInv(target);
-  if (!inv) return;
-
-  try {
-    inv.setItem(slot, undefined);
-  } catch {
+function doDelete(viewer, target, entry) {
+  if (!setEntryItem(target, entry, undefined)) {
     viewer.sendMessage("Failed to delete item.");
   }
 
@@ -341,9 +396,9 @@ function doDelete(viewer, target, slot) {
 
 export const invseeCommand = {
   name: "invsee",
-  minRank: 3, 
+  minRank: 3,
   usage: ":invsee <selector>",
-  description: "Views/edits a player's inventory with icons + slot editing.",
+  description: "Views/edits a player's inventory with icons + armor/offhand slot editing.",
   examples: [":invsee greg", ":invsee others"],
 
   execute({ player, args }) {
@@ -363,5 +418,3 @@ export const invseeCommand = {
     openInventoryEditor(player, target);
   },
 };
-
-
