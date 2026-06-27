@@ -66,6 +66,7 @@ import {
   gmspCommand,
 } from "./gamemode.js";
 import { announceCommand } from "./announce.js";
+import { annoyCommand, unannoyCommand } from "./annoy.js";
 import { messageCommand } from "./message.js";
 import { stresstestCommand } from "./stresstest.js";
 import { punishCommand, unpunishCommand } from "./punish.js";
@@ -161,6 +162,8 @@ manager.register(gmcCommand);
 manager.register(gmaCommand);
 manager.register(gmspCommand);
 manager.register(announceCommand);
+manager.register(annoyCommand);
+manager.register(unannoyCommand);
 manager.register(messageCommand);
 manager.register(stresstestCommand);
 manager.register(punishCommand);

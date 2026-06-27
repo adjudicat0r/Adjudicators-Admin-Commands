@@ -123,6 +123,8 @@ You can also use the `:selectors` command in game to see this reference.
 - `:uneffect` - Removes a potion effect.
 - `:trail` - Enables a particle trail on selected players.
 - `:untrail` - Disables the particle trail.
+- `:annoy` - Rapidly teleports you in front of or behind selected targets while facing them.
+- `:unannoy` - Stops the annoy teleport loop.
 - `:name` - Forces a custom nameTag on selected players.
 - `:unname` - Clears forced nameTags.
 - `:nick` - Alias of `:name`.
