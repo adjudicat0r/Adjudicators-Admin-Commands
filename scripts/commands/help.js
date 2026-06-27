@@ -1,6 +1,8 @@
-
 import { system } from "@minecraft/server";
 import { ActionFormData, FormCancelationReason } from "@minecraft/server-ui";
+import { getPlayerRank, rankName } from "../storage/db.js";
+
+const S = "\u00A7";
 
 export const helpCommand = {
   name: "help",
@@ -12,30 +14,24 @@ export const helpCommand = {
   async execute({ player, args, manager }) {
     try {
       const target = (args?.[0] ?? "").toLowerCase();
-
       const nav = createNavigator(player);
 
-      
       if (target) {
         const cmd = manager?.commands?.get?.(target);
         if (!cmd) {
           player.sendMessage(`Unknown command "${target}".`);
           return;
         }
-        await nav.push(screenCommandDetail(nav, manager, cmd, { fromList: false }));
+        await nav.push(screenCommandDetail(nav, manager, cmd));
         return;
       }
 
-      
       await nav.push(screenCommandList(nav, manager));
     } catch (e) {
       player.sendMessage(`UI error: ${e?.message ?? e}`);
     }
   },
 };
-
-
-
 
 function forceOpen(player, form) {
   return new Promise((resolve) => {
@@ -75,11 +71,7 @@ function isUserBusy(res) {
   return false;
 }
 
-
-
-
 function createNavigator(player) {
-  
   const stack = [];
   return {
     player,
@@ -98,15 +90,10 @@ function createNavigator(player) {
   };
 }
 
-
-
-
 function screenCommandList(nav, manager) {
   const state = {
     page: 0,
     pageSize: 10,
-    
-    
     showLocked: true,
   };
 
@@ -131,29 +118,27 @@ function screenCommandList(nav, manager) {
         [
           `Commands: ${cmds.length}${state.showLocked ? " (including locked)" : ""}`,
           `Page: ${state.page + 1}/${pageCount}`,
+          buildRankLine(nav.player, 0),
           "",
           "Pick a command to view details.",
           "Tip: :help <command> opens details directly.",
-        ].join("\n"),
+        ].join("\n")
       );
 
-        for (const c of pageCmds) {
-        const ok = canRun(manager, nav.player, c);
-        const required = Number.isFinite(c?.minRank) ? c.minRank : 0;
-        const icon = ok ? "§2§r" : "§c§r";
-        const name = ok ? `§2:${c.name}§r` : `§c:${c.name}§r`;
-        const desc = c?.description ?? "No description.";
-        
-        form.button(`${icon} ${name}\n§0${desc}§r\n§8minRank: ${required}§r`);
-        }
+    for (const c of pageCmds) {
+      const ok = canRun(manager, nav.player, c);
+      const required = Number.isFinite(c?.minRank) ? c.minRank : 0;
+      const icon = ok ? `${S}2${S}r` : `${S}c${S}r`;
+      const name = ok ? `${S}2:${c.name}${S}r` : `${S}c:${c.name}${S}r`;
+      const desc = c?.description ?? "No description.";
+      form.button(`${icon} ${name}\n${S}0${desc}${S}r\n${buildRequiredLine(required)}`);
+    }
 
-    
     if (pageCount > 1) {
       form.button("Prev page");
       form.button("Next page");
     }
 
-    
     form.button(state.showLocked ? "Hide locked" : "Show locked");
 
     if (nav.canBack()) form.button("Back");
@@ -163,14 +148,12 @@ function screenCommandList(nav, manager) {
 
     let idx = res.selection;
 
-    
     if (idx < pageCmds.length) {
       const cmd = pageCmds[idx];
-      return nav.push(screenCommandDetail(nav, manager, cmd, { fromList: true, listState: state }));
+      return nav.push(screenCommandDetail(nav, manager, cmd));
     }
     idx -= pageCmds.length;
 
-    
     if (pageCount > 1) {
       if (idx === 0) {
         state.page--;
@@ -183,7 +166,6 @@ function screenCommandList(nav, manager) {
       idx -= 2;
     }
 
-    
     if (idx === 0) {
       state.showLocked = !state.showLocked;
       state.page = 0;
@@ -191,39 +173,35 @@ function screenCommandList(nav, manager) {
     }
     idx -= 1;
 
-    
     if (nav.canBack() && idx === 0) return nav.back();
   };
 }
 
-function screenCommandDetail(nav, manager, cmd, opts = {}) {
+function screenCommandDetail(nav, manager, cmd) {
   return async function run() {
     const ok = canRun(manager, nav.player, cmd);
     const required = Number.isFinite(cmd?.minRank) ? cmd.minRank : 0;
-
     const usage = cmd?.usage ?? `:${cmd?.name ?? "?"}`;
     const desc = cmd?.description ?? "No description.";
     const examples = Array.isArray(cmd?.examples) ? cmd.examples : [];
-
     const rankLine = buildRankLine(nav.player, required);
 
     const header = [
-      `${ok ? "§aAllowed§r" : "§cLocked§r"}  §7(minRank: ${required})§r`,
+      `${ok ? `${S}aAllowed${S}r` : `${S}cLocked${S}r`}  ${buildRequiredLine(required)}`,
       rankLine,
       "",
-      `§f${usage}§r`,
+      `${S}f${usage}${S}r`,
       "",
       desc,
       "",
       examples.length ? "Examples:" : "",
-      ...examples.map((x) => `  §7${x}§r`),
+      ...examples.map((x) => `  ${S}7${x}${S}r`),
     ]
       .filter(Boolean)
       .join("\n");
 
     const form = new ActionFormData().title(`:${cmd?.name ?? "?"}`).body(header);
 
-    
     form.button("Copy usage to chat");
     form.button("List all commands");
 
@@ -233,47 +211,34 @@ function screenCommandDetail(nav, manager, cmd, opts = {}) {
     if (!res || res.canceled) return;
 
     if (res.selection === 0) {
-      
-      nav.player.sendMessage(
-        `${ok ? "§a✔§r" : "§c🔒§r"} :${cmd.name}  §7(minRank: ${required})§r`,
-      );
-      nav.player.sendMessage(`§fUsage:§r ${usage}`);
-      if (desc) nav.player.sendMessage(`§7${desc}§r`);
+      nav.player.sendMessage(`${ok ? `${S}a[+]${S}r` : `${S}c[Locked]${S}r`} :${cmd.name}  ${buildRequiredLine(required)}`);
+      nav.player.sendMessage(`${S}fUsage:${S}r ${usage}`);
+      if (desc) nav.player.sendMessage(`${S}7${desc}${S}r`);
       if (examples.length) {
-        nav.player.sendMessage("§fExamples:§r");
-        for (const ex of examples) nav.player.sendMessage(`§7  ${ex}§r`);
+        nav.player.sendMessage(`${S}fExamples:${S}r`);
+        for (const ex of examples) nav.player.sendMessage(`  ${S}7${ex}${S}r`);
       }
-      return; 
+      return;
     }
 
     if (res.selection === 1) {
-      
       return nav.push(screenCommandList(nav, manager));
     }
 
-    
     if (nav.canBack()) return nav.back();
   };
 }
-
-
-
 
 function safeListCommands(manager) {
   try {
     const list = manager?.listCommands?.();
     if (Array.isArray(list)) return list.slice();
-  } catch {
-    
-  }
+  } catch {}
 
-  
   try {
     const map = manager?.commands;
     if (map && typeof map.values === "function") return Array.from(map.values());
-  } catch {
-    
-  }
+  } catch {}
 
   return [];
 }
@@ -288,29 +253,47 @@ function canRun(manager, player, cmd) {
 
 function buildRankLine(player, requiredMinRank) {
   const you = tryGetPlayerRank(player);
-  if (you === undefined) return "§8Your rank: (unknown)§r";
+  if (you === undefined) return `${S}8Your rank: Unknown${S}r`;
   const ok = you >= requiredMinRank;
-  return `${ok ? "§a" : "§c"}Your rank: ${you}§r`;
+  return `${ok ? `${S}a` : `${S}c`}Your rank: ${formatRank(you)}${S}r`;
 }
 
 function tryGetPlayerRank(player) {
-  
-  
-  
-  
   try {
-    const r = player?.rank;
-    if (Number.isFinite(r)) return r;
+    const rank = getPlayerRank(player);
+    return Number.isFinite(rank) ? rank : undefined;
   } catch {
-    
+    return undefined;
   }
-  try {
-    const dp = player?.getDynamicProperty?.("rank");
-    if (typeof dp === "number" && Number.isFinite(dp)) return dp;
-  } catch {
-    
+}
+
+function buildRequiredLine(requiredRank) {
+  return `${rankColor(requiredRank)}(Required: ${formatRank(requiredRank)})${S}r`;
+}
+
+function formatRank(rank) {
+  const safeRank = Number.isFinite(rank) ? rank : 0;
+  return `${rankLabel(safeRank)}[${safeRank}]`;
+}
+
+function rankLabel(rank) {
+  const raw = rankName(rank);
+  return String(raw ?? "unknown")
+    .split(/[\s_-]+/)
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join("");
+}
+
+function rankColor(rank) {
+  switch (Number(rank)) {
+    case 6: return `${S}6`;
+    case 5: return `${S}5`;
+    case 4: return `${S}c`;
+    case 3: return `${S}3`;
+    case 2: return `${S}b`;
+    default: return `${S}7`;
   }
-  return undefined;
 }
 
 function clamp(n, min, max) {
