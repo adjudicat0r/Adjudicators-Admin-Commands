@@ -1,11 +1,12 @@
-
 import { system, world } from "@minecraft/server";
 import { handleCommandMessage } from "../commands/index.js";
 import { getChatFilterList, getChatFilterMode } from "../storage/db.js";
 
-function getStringProp(p, key) {
+const S = "\u00A7";
+
+function getStringProp(player, key) {
   try {
-    const v = p.getDynamicProperty(key);
+    const v = player.getDynamicProperty(key);
     return typeof v === "string" && v.length ? v : null;
   } catch {
     return null;
@@ -15,7 +16,12 @@ function getStringProp(p, key) {
 function getChatName(player) {
   const forced = getStringProp(player, "acname");
   if (!forced) return player.name;
-  return forced.replace(/^§r/, "");
+  return forced.replace(new RegExp(`^${S}r`), "");
+}
+
+export function sendChatAsPlayer(player, message) {
+  const name = getChatName(player);
+  world.sendMessage(`[${name}]: ${message}`);
 }
 
 function escapeRegex(text) {
@@ -38,7 +44,7 @@ function redactText(text) {
   for (const ch of String(text ?? "")) {
     out += /[a-z0-9]/i.test(ch) ? "#" : ch;
   }
-  return `§c${out}§r`;
+  return `${S}c${out}${S}r`;
 }
 
 function transformFilteredMessage(message, blockedEntries, mode) {
@@ -94,17 +100,14 @@ export function handleChatMessage(event) {
         return;
       }
 
-      const name = getChatName(player);
       const filtered = transformFilteredMessage(msg, blocked, mode);
-      world.sendMessage(`[${name}]: ${filtered}`);
+      sendChatAsPlayer(player, filtered);
       return;
     }
   }
 
   event.cancel = true;
-
-  const name = getChatName(player);
-  world.sendMessage(`[${name}]: ${msg}`);
+  sendChatAsPlayer(player, msg);
 }
 
 export function startChatSystem() {
