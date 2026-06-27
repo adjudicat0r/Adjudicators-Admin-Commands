@@ -91,6 +91,7 @@ You can also use the `:selectors` command in game to see this reference.
 
 - `:help` - Opens the command browser or shows details for one command.
 - `:dice` - Rolls dice in chat using notation like `:dice 2d20`.
+- `:roll` - Alias of `:dice`.
 - `:coinflip` - Flips a coin and announces heads or tails in chat.
 - `:8ball` - Answers a question with a Magic 8-Ball response.
 - `:quote` - Shows a random configured quote or manages the quote list.
@@ -123,6 +124,8 @@ You can also use the `:selectors` command in game to see this reference.
 - `:uneffect` - Removes a potion effect.
 - `:trail` - Enables a particle trail on selected players.
 - `:untrail` - Disables the particle trail.
+- `:glow` - Places tracked level-15 light blocks at selected targets' feet and head.
+- `:unglow` - Removes tracked glow light blocks from selected targets.
 - `:annoy` - Rapidly teleports you in front of or behind selected targets while facing them.
 - `:unannoy` - Stops the annoy teleport loop.
 - `:name` - Forces a custom nameTag on selected players.
@@ -131,11 +134,14 @@ You can also use the `:selectors` command in game to see this reference.
 - `:unnick` - Alias of `:unname`.
 - `:whois` - Shows player information, status, and best-effort metadata.
 - `:message` - Sends a private message or reply-style conversation.
+- `:talk` - Forces selected targets to send a message in chat.
+- `:chat` - Alias of `:talk`.
 - `:cmdbar` - Opens a command bar UI for quick command entry.
 - `:announce` - Shows a popup announcement to everyone.
 - `:kick` - Kicks selected players with an optional message.
 - `:kit` - Saves and loads inventory kits.
 - `:invsee` - Opens another player's inventory for viewing and editing.
+- `:ship` - Rates compatibility between two targets and announces the result globally.
 
 ### Movement and Positioning
 
@@ -170,6 +176,7 @@ You can also use the `:selectors` command in game to see this reference.
 - `:boom` - Creates a non-griefing explosion.
 - `:explode` - Creates an explosion with optional damage and fire behavior.
 - `:clear` - Clears inventories of selected players.
+- `:scrambleinv` - Randomizes inventory slots for selected targets.
 - `:clearlag` - Removes dropped items and experience orbs.
 - `:killaura` - Enables nearby entity damage around selected players.
 - `:unkillaura` - Disables killaura.
