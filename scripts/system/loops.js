@@ -245,7 +245,7 @@ function hookGodDamageCancel() {
   try {
     world.beforeEvents.entityHurt.subscribe((ev) => {
       const hurt = ev.hurtEntity;
-      if (!hurt || hurt.typeId !== "minecraft:player") return;
+      if (!hurt) return;
       try {
         if (hurt.getDynamicProperty("acgod") === true) ev.cancel = true;
       } catch {}

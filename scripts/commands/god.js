@@ -5,8 +5,8 @@ export const godCommand = {
   name: "god",
   minRank: 3, 
   usage: ":god <selector>",
-  description: "Enables godmode for selectors (dynamic property + damage cancel).",
-  examples: [":god", ":god me", ":god others"],
+  description: "Enables godmode for selected players or entities.",
+  examples: [":god", ":god me", ":god others", ":god entity:sheep"],
 
   execute({ player, args }) {
     const selector = args[0] ?? "me";
@@ -25,7 +25,7 @@ export const godCommand = {
       } catch {}
     }
 
-    player.sendMessage(`God enabled for ${count} player(s).`);
+    player.sendMessage(`God enabled for ${count} target(s).`);
   },
 };
 
@@ -33,8 +33,8 @@ export const ungodCommand = {
   name: "ungod",
   minRank: 3, 
   usage: ":ungod <selector>",
-  description: "Disables godmode for selectors.",
-  examples: [":ungod", ":ungod me", ":ungod others"],
+  description: "Disables godmode for selected players or entities.",
+  examples: [":ungod", ":ungod me", ":ungod others", ":ungod entity:sheep"],
 
   execute({ player, args }) {
     const selector = args[0] ?? "me";
@@ -53,6 +53,6 @@ export const ungodCommand = {
       } catch {}
     }
 
-    player.sendMessage(`God disabled for ${count} player(s).`);
+    player.sendMessage(`God disabled for ${count} target(s).`);
   },
 };
