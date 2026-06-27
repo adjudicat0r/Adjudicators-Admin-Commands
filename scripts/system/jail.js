@@ -1,7 +1,9 @@
 import { BlockPermutation, system, world } from "@minecraft/server";
 
 const activeJails = new Map();
+const activeJailBlocks = new Map();
 let jailTickerStarted = false;
+let nextJailSessionId = 1;
 
 function getDimensionById(dimId) {
   const s = String(dimId ?? "").toLowerCase();
@@ -30,18 +32,8 @@ function makeBlockKey(loc) {
   return `${loc.x}|${loc.y}|${loc.z}`;
 }
 
-function saveBlock(saved, dim, loc) {
-  const key = makeBlockKey(loc);
-  if (saved.has(key)) return;
-
-  try {
-    const block = dim.getBlock(loc);
-    if (!block) return;
-    saved.set(key, {
-      loc: cloneBlockLoc(loc),
-      permutation: block.permutation,
-    });
-  } catch {}
+function makeDimBlockKey(dimensionId, loc) {
+  return `${dimensionId}:${makeBlockKey(loc)}`;
 }
 
 function setBlockType(dim, loc, typeId) {
@@ -55,8 +47,41 @@ function setBlockType(dim, loc, typeId) {
   }
 }
 
-function buildJail(dim, baseLoc) {
-  const saved = new Map();
+function getLastClaimTypeId(claims) {
+  let lastTypeId = null;
+  for (const typeId of claims.values()) {
+    lastTypeId = typeId;
+  }
+  return lastTypeId;
+}
+
+function addJailBlockClaim(session, dim, dimensionId, loc, typeId) {
+  const locCopy = cloneBlockLoc(loc);
+  const key = makeDimBlockKey(dimensionId, locCopy);
+  let entry = activeJailBlocks.get(key);
+
+  if (!entry) {
+    try {
+      const block = dim.getBlock(locCopy);
+      if (!block) return;
+      entry = {
+        loc: locCopy,
+        dimensionId,
+        originalPermutation: block.permutation,
+        claims: new Map(),
+      };
+      activeJailBlocks.set(key, entry);
+    } catch {
+      return;
+    }
+  }
+
+  entry.claims.set(session.sessionId, typeId);
+  session.claimKeys.push(key);
+  setBlockType(dim, locCopy, typeId);
+}
+
+function buildJail(session, dim, dimensionId, baseLoc) {
   const placements = [];
 
   for (let dx = -1; dx <= 1; dx++) {
@@ -94,23 +119,35 @@ function buildJail(dim, baseLoc) {
   });
 
   for (const entry of placements) {
-    saveBlock(saved, dim, entry.loc);
-    setBlockType(dim, entry.loc, entry.typeId);
+    addJailBlockClaim(session, dim, dimensionId, entry.loc, entry.typeId);
   }
-
-  return Array.from(saved.values());
 }
 
 function restoreJailBlocks(session) {
   const dim = getDimensionById(session.dimensionId);
-  const records = Array.isArray(session?.savedBlocks) ? session.savedBlocks : [];
+  const claimKeys = Array.isArray(session?.claimKeys) ? session.claimKeys : [];
 
-  for (const record of records) {
+  for (const key of claimKeys) {
+    const entry = activeJailBlocks.get(key);
+    if (!entry) continue;
+
+    entry.claims.delete(session.sessionId);
+
+    if (entry.claims.size > 0) {
+      const remainingTypeId = getLastClaimTypeId(entry.claims);
+      if (remainingTypeId) {
+        setBlockType(dim, entry.loc, remainingTypeId);
+      }
+      continue;
+    }
+
     try {
-      const block = dim.getBlock(record.loc);
+      const block = dim.getBlock(entry.loc);
       if (!block) continue;
-      block.setPermutation(record.permutation);
+      block.setPermutation(entry.originalPermutation);
     } catch {}
+
+    activeJailBlocks.delete(key);
   }
 }
 
@@ -178,19 +215,20 @@ export function jailPlayer(target, seconds) {
 
   const dimensionId = String(target.dimension?.id ?? "minecraft:overworld");
   const dim = getDimensionById(dimensionId);
-  const savedBlocks = buildJail(dim, baseLoc);
-
-  try {
-    target.teleport(center, { dimension: dim });
-  } catch {}
-
   const session = {
+    sessionId: nextJailSessionId++,
     playerId: target.id,
     dimensionId,
     center,
     expiresAt: Date.now() + durationSeconds * 1000,
-    savedBlocks,
+    claimKeys: [],
   };
+
+  buildJail(session, dim, dimensionId, baseLoc);
+
+  try {
+    target.teleport(center, { dimension: dim });
+  } catch {}
 
   activeJails.set(target.id, session);
   return { ok: true, seconds: durationSeconds };
