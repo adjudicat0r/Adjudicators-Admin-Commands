@@ -162,6 +162,8 @@ You can also use the `:selectors` command in game to see this reference.
 - `:unspectate` - Stops spectating.
 - `:path` - Streams a smarter knockback-based path toward coordinates.
 - `:backrooms` - Teleports selected players to `9999999 9999999 9999999`.
+- `:noclip` - Phases targets through a wall when they are pressed fully against it and there is air on the far side.
+- `:clip` - Disables noclip wall phasing for targets.
 - `:lock` - Locks selected players in place.
 - `:unlock` - Releases locked players.
 - `:jail` - Teleports players into a timed mini jail and restores the replaced blocks after release.
