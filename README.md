@@ -118,6 +118,8 @@ You can also use the `:selectors` command in game to see this reference.
 - `:ungod` - Disables godmode.
 - `:blind` - Applies the blind/fade effect.
 - `:unblind` - Clears the blind/fade effect.
+- `:control` - Lets you take over one player or entity at a time.
+- `:uncontrol` - Stops controlling your current target.
 - `:morph` - Hides players inside a spawned entity morph and mirrors health between them.
 - `:unmorph` - Stops a player's morph and removes the spawned morph entity.
 - `:trip` - Wacky visuals for selected players.
