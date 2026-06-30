@@ -164,6 +164,8 @@ You can also use the `:selectors` command in game to see this reference.
 - `:backrooms` - Teleports selected players to `9999999 9999999 9999999`.
 - `:noclip` - Phases targets through a wall when they are pressed fully against it and there is air on the far side.
 - `:clip` - Disables noclip wall phasing for targets.
+- `:rope` - Connects two target groups with a particle rope that pulls stretched links back together.
+- `:unrope` - Removes rope links from targets or between two target groups.
 - `:lock` - Locks selected players in place.
 - `:unlock` - Releases locked players.
 - `:jail` - Teleports players into a timed mini jail and restores the replaced blocks after release.
