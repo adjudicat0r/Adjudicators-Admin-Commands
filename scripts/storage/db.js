@@ -409,6 +409,15 @@ export function clearMotd() {
   return true;
 }
 
+export function isWorldLocked() {
+  return world.getDynamicProperty("ac:worldlock") === true;
+}
+
+export function setWorldLocked(enabled) {
+  world.setDynamicProperty("ac:worldlock", enabled === true);
+  return true;
+}
+
 export function getQuotes() {
   const list = readWorldJson("ac:quotes", []);
   return Array.isArray(list) ? list.slice() : [];

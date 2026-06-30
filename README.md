@@ -182,6 +182,8 @@ You can also use the `:selectors` command in game to see this reference.
 - `:unpunish` - Restores movement and the saved gamemode after punishment.
 - `:time` - Sets the world time to `day`, `night`, `sunrise`, or `sunset`.
 - `:weather` - Sets the world weather to `clear`, `rain`, or `thunder`/`thunderstorm`.
+- `:worldlock` - Prevents players and explosions from changing the map.
+- `:unworldlock` - Re-enables block breaking, placing, and explosions.
 - `:bomb` - Creates a destructive blast at selected targets.
 - `:boom` - Creates a non-griefing explosion.
 - `:explode` - Creates an explosion with optional damage and fire behavior.

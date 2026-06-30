@@ -25,8 +25,76 @@ startChatSystem();
 startLoops({ intervalTicks: 2 });
 startSpawnRateSystem();
 startAutobroadcastSystem();
+startMorphSystem();
 startPetSystem();
 startTripSystem();
+
+system.beforeEvents.startup.subscribe((event) => {
+  const registry = event.customCommandRegistry;
+  if (!registry) return;
+
+  registry.registerCommand(
+    {
+      name: "admin:fling",
+      description: "Flings selected players in a random direction.",
+      permissionLevel: CommandPermissionLevel.Admin,
+      cheatsRequired: true,
+      mandatoryParameters: [
+        {
+          name: "selector",
+          type: CustomCommandParamType.String,
+        },
+        {
+          name: "power",
+          type: CustomCommandParamType.Float,
+        },
+      ],
+    },
+    (origin, ...rawParams) => {
+      const usesPackedParams =
+        rawParams.length === 1 &&
+        Array.isArray(rawParams[0]) &&
+        rawParams[0].length <= 2;
+
+      const selector = String(usesPackedParams ? rawParams[0]?.[0] : rawParams[0] ?? "me").trim();
+      const power = usesPackedParams ? rawParams[0]?.[1] : rawParams[1];
+      const numericPower = Number(power);
+      const executor = origin?.sourceEntity;
+
+      if (!executor) {
+        return {
+          status: CustomCommandStatus.Failure,
+          message: "This test fling slash command currently requires a player/entity source.",
+        };
+      }
+
+      const targetList = selectPlayers(executor, selector);
+
+      if (!targetList.length) {
+        return {
+          status: CustomCommandStatus.Failure,
+          message: `No targets matched: ${selector}`,
+        };
+      }
+
+      if (!Number.isFinite(numericPower) || numericPower <= 0) {
+        return {
+          status: CustomCommandStatus.Failure,
+          message: "Power must be greater than 0.",
+        };
+      }
+
+      system.run(() => {
+        applyFlingToTargets(targetList, numericPower);
+      });
+
+      return {
+        status: CustomCommandStatus.Success,
+        message: `Queued fling for ${targetList.length} player(s).`,
+      };
+    }
+  );
+});
 
 world.afterEvents.playerSpawn.subscribe((event) => {
   const player = event.player;
