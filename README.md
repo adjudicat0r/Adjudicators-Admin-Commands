@@ -105,6 +105,7 @@ You can also use the `:selectors` command in game to see this reference.
 - `:filter` - Manages blocked chat words and phrases with `block`, `scramble`, and `redact` modes.
 - `:selectors` - Shows selector syntax and usage examples.
 - `:script` - Runs an arbitrary command as a script action.
+- `:silent` - Runs another command without showing its normal chat feedback.
 - `:sudo` - Runs a command as selected players.
 - `:spawnrate` - Adjusts the server side spawn multiplier for selected entities.
 - `:stresstest` - Attempts to crash a client

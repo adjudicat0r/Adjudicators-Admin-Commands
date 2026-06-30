@@ -88,6 +88,7 @@ import { scriptCommand } from "./script.js";
 import { spawnrateCommand } from "./spawnrate.js";
 import { pathCommand } from "./path.js";
 import { backroomsCommand } from "./backrooms.js";
+import { skydiveCommand } from "./skydive.js";
 import { jailCommand } from "./jail.js";
 import { cmdqueueCommand } from "./cmdqueue.js";
 import { macroCommand } from "./macro.js";

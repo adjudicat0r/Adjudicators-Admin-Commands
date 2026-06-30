@@ -59,24 +59,29 @@ export class CommandManager {
     return bestName;
   }
 
-  runFromChat(player, rawMessage) {
+  runFromChat(player, rawMessage, options = {}) {
+    const silent = options?.silent === true;
     const parsed = this.parse(rawMessage);
     if (!parsed) return;
 
     const cmd = this.commands.get(parsed.name);
     if (!cmd) {
-      const suggestion = this.suggestCommandName(parsed.name);
-      if (suggestion && suggestion !== parsed.name) {
-        player.sendMessage(`Unknown command: ${parsed.name}. Did you mean :${suggestion}?`);
-      } else {
-        player.sendMessage(`Unknown command: ${parsed.name}`);
+      if (!silent) {
+        const suggestion = this.suggestCommandName(parsed.name);
+        if (suggestion && suggestion !== parsed.name) {
+          player.sendMessage(`Unknown command: ${parsed.name}. Did you mean :${suggestion}?`);
+        } else {
+          player.sendMessage(`Unknown command: ${parsed.name}`);
+        }
       }
       return;
     }
 
     const need = this.getEffectiveMinRank(cmd);
     if (!this.canRun(player, cmd)) {
-      player.sendMessage(`No permission (need rank ${need}+).`);
+      if (!silent) {
+        player.sendMessage(`No permission (need rank ${need}+).`);
+      }
       return;
     }
 
@@ -87,13 +92,14 @@ export class CommandManager {
       cmd: `${parsed.prefix ?? this.prefix}${parsed.text}`,
     });
 
+    const ctxPlayer = silent ? createSilentPlayerProxy(player) : player;
     const ctx = {
       manager: this,
-      player,
+      player: ctxPlayer,
       raw: rawMessage,
       name: parsed.name,
       args: parsed.args,
-      runCommand: (line) => this.runFromSystem(player, line),
+      runCommand: (line) => this.runFromSystem(player, line, { silent }),
       getEffectiveMinRank: (commandName) => {
         const c = this.commands.get(String(commandName).toLowerCase());
         if (!c) return null;
@@ -104,12 +110,14 @@ export class CommandManager {
     try {
       cmd.execute(ctx);
     } catch (e) {
-      player.sendMessage(`Command error: ${e?.message ?? e}`);
+      if (!silent) {
+        player.sendMessage(`Command error: ${e?.message ?? e}`);
+      }
     }
   }
 
-  runFromSystem(player, rawMessage) {
-    this.runFromChat(player, rawMessage);
+  runFromSystem(player, rawMessage, options = {}) {
+    this.runFromChat(player, rawMessage, options);
   }
 
   loop(player, times, intervalTicks, commandLine) {
@@ -126,6 +134,19 @@ export class CommandManager {
   listCommands() {
     return [...this.commands.values()];
   }
+}
+
+function createSilentPlayerProxy(player) {
+  return new Proxy(player, {
+    get(target, prop, receiver) {
+      if (prop === "sendMessage") {
+        return () => {};
+      }
+
+      const value = Reflect.get(target, prop, receiver);
+      return typeof value === "function" ? value.bind(target) : value;
+    },
+  });
 }
 
 function levenshteinDistance(a, b) {

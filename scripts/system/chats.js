@@ -88,6 +88,12 @@ export function handleChatMessage(event) {
     msg.startsWith(".") ||
     msg.startsWith(":") ||
     msg.startsWith(";");
+  const lowered = String(msg ?? "").toLowerCase();
+  const isSilentCommand =
+    lowered.startsWith(":silent ") ||
+    lowered === ":silent" ||
+    lowered.startsWith(";silent ") ||
+    lowered === ";silent";
 
   if (msg.startsWith(".")) {
     event.cancel = true;
@@ -95,16 +101,21 @@ export function handleChatMessage(event) {
     return;
   }
   if (msg.startsWith(":")) {
+    if (isSilentCommand) {
+      event.cancel = true;
+    }
     system.run(() => handleCommandMessage(player, msg));
     return;
   }
   if (msg.startsWith(";")) {
+    if (isSilentCommand) {
+      event.cancel = true;
+    }
     system.run(() => handleCommandMessage(player, msg));
     return;
   }
 
   if (!isCommand) {
-    const lowered = msg.toLowerCase();
     const blocked = getChatFilterList().filter((entry) => entry && lowered.includes(entry));
     if (blocked.length) {
       event.cancel = true;
