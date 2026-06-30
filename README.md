@@ -171,6 +171,7 @@ You can also use the `:selectors` command in game to see this reference.
 - `:unspectate` - Stops spectating.
 - `:path` - Streams a smarter knockback-based path toward coordinates.
 - `:backrooms` - Teleports selected players to `9999999 9999999 9999999`.
+- `:skydive` - Teleports targets 1000 blocks upward from their current position.
 - `:noclip` - Phases targets through a wall when they are pressed fully against it and there is air on the far side.
 - `:clip` - Disables noclip wall phasing for targets.
 - `:rope` - Connects two target groups with a particle rope that pulls stretched links back together.
