@@ -1,7 +1,15 @@
 
-import { world, system } from "@minecraft/server";
+import {
+  world,
+  system,
+  CommandPermissionLevel,
+  CustomCommandParamType,
+  CustomCommandStatus,
+} from "@minecraft/server";
 
 import { handleCommandMessage } from "./commands/index.js";
+import { applyFlingToTargets } from "./commands/fling.js";
+import { selectPlayers } from "./lib/selectors.js";
 import {
   handleDataToolBlock,
   handleDataToolEntity,
@@ -11,13 +19,14 @@ import { handleHistoryToolUse } from "./buildingtools/historytool.js";
 import { handleCloneToolClick } from "./buildingtools/clonetool.js";
 import { handleBuildToolBlock } from "./buildingtools/buildtool.js";
 
-import { getMotd, setPlayerRank } from "./storage/db.js";
+import { getMotd, isWorldLocked, setPlayerRank } from "./storage/db.js";
 import { owner } from "./system/config.js";
 
 import { startChatSystem } from "./system/chats.js";
 import { startLoops } from "./system/loops.js";
 import { startSpawnRateSystem } from "./system/spawnrate.js";
 import { startAutobroadcastSystem } from "./system/autobroadcast.js";
+import { startMorphSystem } from "./system/morph.js";
 import { startPetSystem } from "./system/pet.js";
 import { startTripSystem } from "./system/trip.js";
 
@@ -202,6 +211,27 @@ world.beforeEvents.playerInteractWithEntity.subscribe((event) => {
   const entity = event.target;
   system.run(() => handleDataToolEntity(player, entity));
 });
+
+try {
+  world.beforeEvents.playerPlaceBlock.subscribe((event) => {
+    if (!isWorldLocked()) return;
+    event.cancel = true;
+  });
+} catch {}
+
+try {
+  world.beforeEvents.playerBreakBlock.subscribe((event) => {
+    if (!isWorldLocked()) return;
+    event.cancel = true;
+  });
+} catch {}
+
+try {
+  world.beforeEvents.explosion.subscribe((event) => {
+    if (!isWorldLocked()) return;
+    event.cancel = true;
+  });
+} catch {}
 
 
 world.afterEvents.itemUse.subscribe((event) => {
