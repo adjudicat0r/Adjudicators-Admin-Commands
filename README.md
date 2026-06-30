@@ -124,10 +124,14 @@ You can also use the `:selectors` command in game to see this reference.
 - `:unfire` - Extinguishes selected players.
 - `:effect` - Applies a potion effect.
 - `:uneffect` - Removes a potion effect.
+- `:grav` - Continuously pushes targets down, or up with negative values.
+- `:ungrav` - Stops the continuous gravity override on targets.
 - `:trail` - Enables a particle trail on selected players.
 - `:untrail` - Disables the particle trail.
 - `:glow` - Places tracked level-15 light blocks at selected targets' feet and head.
 - `:unglow` - Removes tracked glow light blocks from selected targets.
+- `:slippery` - Makes targets keep sliding horizontally like they are on ice.
+- `:unslippery` - Stops the extra icy sliding effect on targets.
 - `:annoy` - Rapidly teleports you in front of or behind selected targets while facing them.
 - `:unannoy` - Stops the annoy teleport loop.
 - `:name` - Forces a custom nameTag on selected players.
