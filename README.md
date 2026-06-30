@@ -111,6 +111,7 @@ You can also use the `:selectors` command in game to see this reference.
 ### Player Utilities
 
 - `:heal` - Restores health and clears fire if applicable.
+- `:health` - Adds health to targets by the given amount.
 - `:god` - Enables godmode for selected players.
 - `:ungod` - Disables godmode.
 - `:blind` - Applies the blind/fade effect.
