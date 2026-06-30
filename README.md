@@ -92,6 +92,7 @@ You can also use the `:selectors` command in game to see this reference.
 - `:help` - Opens the command browser or shows details for one command.
 - `:calculator` - Evaluates a math expression in chat.
 - `:calc` - Alias of `:calculator`.
+- `:damage` - Removes health from targets by the given amount.
 - `:dice` - Rolls dice in chat using notation like `:dice 2d20`.
 - `:roll` - Alias of `:dice`.
 - `:coinflip` - Flips a coin and announces heads or tails in chat.
